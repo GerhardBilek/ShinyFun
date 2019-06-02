@@ -44,11 +44,12 @@ ui <- fluidPage(
             sidebarLayout(
               sidebarPanel(
                 selectInput("regressand", "Dependent Variable", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), selected = "Fertility"),
-                selectInput("regressor1", "Independent Variable 1", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant Mortality", "NONE"), selected = "Agriculture"),
-                selectInput("regressor2", "Independent Variable 2", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant Mortality"), selected = "Education"),
-                selectInput("regressor3", "Independent Variable 3", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant Mortality"), selected = "Catholic"),
-                selectInput("regressor4", "Independent Variable 4", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant Mortality"), selected = "Infant.Mortality")
+                selectInput("regressor1", "Independent Variable 1", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality", "NONE"), selected = "Agriculture"),
+                selectInput("regressor2", "Independent Variable 2", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), selected = "Education"),
+                selectInput("regressor3", "Independent Variable 3", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), selected = "Catholic"),
+                selectInput("regressor4", "Independent Variable 4", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), selected = "Infant.Mortality"),
                 #checkbox group statt der drop downs? verbesserung für modellanpassung?
+                checkboxGroupInput("checkbox", "check independent variables", choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"))
 
               ),
               mainPanel(tags$h4("Possible linear models:"),
@@ -56,7 +57,8 @@ ui <- fluidPage(
                         actionButton("analysis","Analyze!"),
                         verbatimTextOutput("modelFormula"),
                         verbatimTextOutput("modelSummary"),
-                        verbatimTextOutput("value")
+                        verbatimTextOutput("value"),
+                        tableOutput("data")
               )
             )
     ))
@@ -119,6 +121,9 @@ server <- function(input, output){
     summary(mod())
   })
 
+  output$data <- renderTable({
+    swiss[, c("Fertility", input$checkbox), drop = F]
+  }, rownames = T)
   
 }
 
