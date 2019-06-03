@@ -58,7 +58,7 @@ ui <- fluidPage(
                         verbatimTextOutput("modelFormula"),
                         verbatimTextOutput("modelSummary"),
                         verbatimTextOutput("value"),
-                        tableOutput("data")
+                        tableOutput("data1") 
               )
             )
     ))
@@ -105,7 +105,7 @@ server <- function(input, output){
     step(fit)})
   
   myformula <- reactive({
-    expln <- paste(c(input$regressor1, input$regressor2, input$regressor3, input$regressor4), collapse = "+")
+    expln <- paste(input$checkbox, collapse = "+")
     as.formula(paste(input$regressand, " ~ ", expln))
   })
   
@@ -121,10 +121,15 @@ server <- function(input, output){
     summary(mod())
   })
 
-  output$data <- renderTable({
-    swiss[, c("Fertility", input$checkbox), drop = F]
-  }, rownames = T)
+
+  #output$data1 <- renderTable({
+   # swiss[, c("Fertility", input$checkbox), drop = F] # input$checkbox ist eine function, type closure
+  #}, rownames = T)
   
+  #output$stepmodel <- renderPrint({
+   # fit <- lm(swiss[,input$regressand] ~ input$checkbox)
+    #names(fit$coefficients) <- c("Intercept", input$regressor1, input$regressor2, input$regressor3)
+    #step(fit)})
 }
 
 
