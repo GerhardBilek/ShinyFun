@@ -160,15 +160,6 @@ server <- function(input, output){
     plot(fit)
   })
 
-
-  #output$data1 <- renderTable({
-   # swiss[, c("Fertility", input$checkbox), drop = F] # input$checkbox ist eine function, type closure
-  #}, rownames = T)
-  
-  #output$stepmodel <- renderPrint({
-   # fit <- lm(swiss[,input$regressand] ~ input$checkbox)
-    #names(fit$coefficients) <- c("Intercept", input$regressor1, input$regressor2, input$regressor3)
-    #step(fit)})
 }
 
 
