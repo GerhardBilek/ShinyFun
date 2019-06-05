@@ -40,15 +40,21 @@ ui <- fluidPage(
                                   #plotOutput("hist"),
                                   #plotOutput("boxplot"),
                                   tabsetPanel(
-                                    tabPanel("All data", tableOutput("rawdata_swiss") ),
-                                    tabPanel("Summary", verbatimTextOutput("summary") ),
+                                    tabPanel("All data", tableOutput("rawdata_swiss")),
+                                    tabPanel("Summary", verbatimTextOutput("summary")),
                                     tabPanel("Histogram & Boxplot", plotOutput("hist"), plotOutput(outputId = "boxplot", brush = brushOpts(direction = "y", id= "plot_brush_"))),
-                                    tabPanel("QQ-Plot", plotOutput("qqplot")),
-                                    tabPanel("Scatterplot", plotOutput("scatter"))
+                                    tabPanel("QQ-Plot", plotOutput("qqplot"))#,
+                                    #tabPanel("Scatterplot", plotOutput("scatter"))
                                   )
                         )
                       )),
-             tabPanel('Correlation', "TEXT"),
+             tabPanel('Correlation', tags$h2("übersicht über alle korrelationen"),
+                      mainPanel(plotOutput("scatter"))
+             
+                      
+              ),
+             
+             
              tabPanel('Linear Model', tags$h3("Enter your dependent and independent variables"),
                       sidebarLayout(
                           sidebarPanel(
@@ -56,14 +62,19 @@ ui <- fluidPage(
                               checkboxGroupInput("checkbox", "Check independent variables", choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"))
                           ),
                           mainPanel(tags$h4("Possible linear models:"),
-                              verbatimTextOutput("stepmodel"),
-                              actionButton("analysis","I have chosen my independents and want to ANALYSE"),
-                              verbatimTextOutput("modelFormula"),
-                              verbatimTextOutput("modelSummary"),
-                              verbatimTextOutput("value"),
-                              tableOutput("data1"),
-                              plotOutput("model_plot"),
-                              plotOutput("model_qq")
+                                    tabsetPanel(
+                                      tabPanel("Step (AIC)", verbatimTextOutput("stepmodel"),
+                                               actionButton("analysis","I have chosen my independents and want to ANALYSE")
+                                              ),
+                                      tabPanel("Formel und Modell", verbatimTextOutput("modelFormula"),
+                                               verbatimTextOutput("modelSummary")
+                                               ),
+                                      tabPanel("Residuenplots", plotOutput("model_plot1"),
+                                               plotOutput("model_plot2"),
+                                               plotOutput("model_plot3"),
+                                               plotOutput("model_plot4")
+                                               )
+                                    )
                           )
                       )
             )
@@ -110,7 +121,6 @@ server <- function(input, output){
                       "Agriculture" = swiss$Agriculture,
                       "Education" = swiss$Education,
                       "Catholic" = swiss$Catholic,
-                      "Fertility" = swiss$Fertility,
                       "Infant.Mortality" = swiss$Infant.Mortality
     )
     
@@ -132,7 +142,7 @@ server <- function(input, output){
     pairs(swiss, lower.panel = panel.smooth, upper.panel = panel.cor,
           gap=0, row1attop=FALSE, main = "Scatterplot")})
   
-  
+#Lineares Modell --------------------------------------------------------------------------------
   myformula <- reactive({
     expln <- paste(input$checkbox, collapse = "+")
     as.formula(paste(input$regressand, "~", expln))
@@ -155,11 +165,31 @@ server <- function(input, output){
     summary(mod())
   })
 
-  output$model_plot <- renderPlot({
+  output$model_plot1 <- renderPlot({
     fit = lm(myformula(), data=swiss)
-    plot(fit)
+    #for (i in 1:4) {plot(fit, which = i)}
+    plot(fit, which=1)
+    
   })
+  
+  output$model_plot2 <- renderPlot({
+    fit = lm(myformula(), data=swiss)
+    plot(fit, which=2)
 
+  })
+  
+  output$model_plot3 <- renderPlot({
+    fit = lm(myformula(), data=swiss)
+    plot(fit, which=3)
+    
+  })
+  output$model_plot4 <- renderPlot({
+    fit = lm(myformula(), data=swiss)
+    plot(fit, which=4)
+    
+  })
+  
+#Lineares Modell Ende --------------------------------------------------------------------------------
 }
 
 
