@@ -49,45 +49,32 @@ ui <- fluidPage(
                         )
                       )),
              tabPanel('Correlation', "TEXT"),
-             tabPanel('Linear Model', tags$h3("Enter your dependent and independent variables")),
-             sidebarLayout(
-               sidebarPanel(
-                 selectInput("regressand", "Dependent Variable", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" )),
-                 selectInput("regressor1", "Independent Variable 1", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" )),
-                 selectInput("regressor2", "Independent Variable 2", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" )),
-                 selectInput("regressor3", "Independent Variable 3", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" ))
-                 
-               ),
-               mainPanel(tags$h4("Modelle:"),
-                         actionButton("analysis","Analyze!"),
-                         verbatimTextOutput("stepmodel"),
-                         verbatimTextOutput("modelFormula"),
-                         verbatimTextOutput("modelSummary")
-               )
-             )
-  ))
-
-              ),
-              mainPanel(tags$h4("Possible linear models:"),
-                        verbatimTextOutput("stepmodel"),
-                        actionButton("analysis","I have chosen my independents and want to ANALYSE"),
-                        verbatimTextOutput("modelFormula"),
-                        verbatimTextOutput("modelSummary"),
-                        verbatimTextOutput("value"),
-                        tableOutput("data1"),
-                        plotOutput("model_plot"),
-                        plotOutput("model_qq")
-
-              )
+             tabPanel('Linear Model', tags$h3("Enter your dependent and independent variables"),
+                      sidebarLayout(
+                          sidebarPanel(
+                              selectInput("regressand", "Dependent Variable", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" )),
+                              checkboxGroupInput("checkbox", "Check independent variables", choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"))
+                          ),
+                          mainPanel(tags$h4("Possible linear models:"),
+                              verbatimTextOutput("stepmodel"),
+                              actionButton("analysis","I have chosen my independents and want to ANALYSE"),
+                              verbatimTextOutput("modelFormula"),
+                              verbatimTextOutput("modelSummary"),
+                              verbatimTextOutput("value"),
+                              tableOutput("data1"),
+                              plotOutput("model_plot"),
+                              plotOutput("model_qq")
+                          )
+                      )
             )
-    ))
+
+  ))
 
 server <- function(input, output){
   datasetInput <- reactive({
     switch(input$dataset,
            "Fertility" = swiss$Fertility,
            "Agriculture" = swiss$Agriculture,
-           "Examination" = swiss$Examination,
            "Education" = swiss$Education,
            "Catholic" = swiss$Catholic,
            "Fertility" = swiss$Fertility,
@@ -121,7 +108,6 @@ server <- function(input, output){
     feature <- switch(input$dataset,
                       "Fertility" = swiss$Fertility,
                       "Agriculture" = swiss$Agriculture,
-                      "Examination" = swiss$Examination,
                       "Education" = swiss$Education,
                       "Catholic" = swiss$Catholic,
                       "Fertility" = swiss$Fertility,
@@ -146,14 +132,10 @@ server <- function(input, output){
     pairs(swiss, lower.panel = panel.smooth, upper.panel = panel.cor,
           gap=0, row1attop=FALSE, main = "Scatterplot")})
   
-  output$stepmodel <- renderPrint({
-    fit <- lm(swiss[,input$regressand] ~ swiss[,input$regressor1] + swiss[,input$regressor2] + swiss[,input$regressor3])
-    names(fit$coefficients) <- c("Intercept", input$regressor1, input$regressor2, input$regressor3)
-    step(fit)})
   
   myformula <- reactive({
-    expln <- paste(c(input$regressor1, input$regressor2, input$regressor3), collapse = "+")
-    as.formula(paste(input$regressand, " ~ ", expln))
+    expln <- paste(input$checkbox, collapse = "+")
+    as.formula(paste(input$regressand, "~", expln))
   })
   
   mod <- eventReactive(input$analysis, {
@@ -162,6 +144,11 @@ server <- function(input, output){
   
   output$modelFormula <- renderPrint({
     myformula()
+  })
+  
+  output$stepmodel <- renderPrint({
+    fit = lm(myformula(), data=swiss)
+    step(fit)
   })
   
   output$modelSummary <- renderPrint({
