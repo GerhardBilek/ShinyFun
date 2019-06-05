@@ -67,6 +67,20 @@ ui <- fluidPage(
              )
   ))
 
+              ),
+              mainPanel(tags$h4("Possible linear models:"),
+                        verbatimTextOutput("stepmodel"),
+                        actionButton("analysis","I have chosen my independents and want to ANALYSE"),
+                        verbatimTextOutput("modelFormula"),
+                        verbatimTextOutput("modelSummary"),
+                        verbatimTextOutput("value"),
+                        tableOutput("data1"),
+                        plotOutput("model_plot"),
+                        plotOutput("model_qq")
+
+              )
+            )
+    ))
 
 server <- function(input, output){
   datasetInput <- reactive({
@@ -153,6 +167,21 @@ server <- function(input, output){
   output$modelSummary <- renderPrint({
     summary(mod())
   })
+
+  output$model_plot <- renderPlot({
+    fit = lm(myformula(), data=swiss)
+    plot(fit)
+  })
+
+
+  #output$data1 <- renderTable({
+   # swiss[, c("Fertility", input$checkbox), drop = F] # input$checkbox ist eine function, type closure
+  #}, rownames = T)
+  
+  #output$stepmodel <- renderPrint({
+   # fit <- lm(swiss[,input$regressand] ~ input$checkbox)
+    #names(fit$coefficients) <- c("Intercept", input$regressor1, input$regressor2, input$regressor3)
+    #step(fit)})
 }
 
 
