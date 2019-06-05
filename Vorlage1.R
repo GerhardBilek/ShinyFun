@@ -58,7 +58,10 @@ ui <- fluidPage(
                         verbatimTextOutput("modelFormula"),
                         verbatimTextOutput("modelSummary"),
                         verbatimTextOutput("value"),
-                        tableOutput("data1") 
+                        tableOutput("data1"),
+                        plotOutput("model_plot"),
+                        plotOutput("model_qq")
+
               )
             )
     ))
@@ -121,6 +124,11 @@ server <- function(input, output){
   
   output$modelSummary <- renderPrint({
     summary(mod())
+  })
+
+  output$model_plot <- renderPlot({
+    fit = lm(myformula(), data=swiss)
+    plot(fit)
   })
 
 
