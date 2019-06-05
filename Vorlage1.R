@@ -1,10 +1,12 @@
 library(shiny)
 library(utils)
 library(gridExtra)
+library(ggplot2) 
 
 swiss <- swiss[,-3]    # remove "Examination" from Dataset
+#snames <- colnames(s)
 
-##definition for the scatterplot
+##definition for scatterplot
 #------------------------------------------------------------------------------------------------
 panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
 {
@@ -20,53 +22,54 @@ panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
 
 ui <- fluidPage(
   navbarPage(title = 'Swiss Data',
-    tabPanel('Exploration', tags$h3("Data Exploration: Distribution of Swiss datasets "), #tableOutput("rawdata_swiss"),
-             sidebarLayout
-              (
-                
-                sidebarPanel
-                (
-                  radioButtons("dataset", "Select a Dataset", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" ))
-                ),
-                
-              mainPanel(tags$h4("Data and Visualizations:"),
-                  tabsetPanel(
-                    tabPanel("All data", tableOutput("rawdata_swiss") ),
-                    tabPanel("Summary", verbatimTextOutput("summary") ),
-                    tabPanel("Histogram & Boxplot", plotOutput("hist"), plotOutput("boxplot")),
-                    tabPanel("QQ-Plot", plotOutput("qqplot")),
-                    tabPanel("Scatterplot", plotOutput("scatter"))
-                  )
-                )
-              )),
-    tabPanel('Correlation', "TEXT"),
-    tabPanel('Linear Model', tags$h4("Enter your dependent and independent variables")),
-            sidebarLayout(
-              sidebarPanel(
-                selectInput("regressand", "Dependent Variable", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), selected = "Fertility"),
-                #selectInput("regressor1", "Independent Variable 1", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality", "NONE"), selected = "Agriculture"),
-                #selectInput("regressor2", "Independent Variable 2", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), selected = "Education"),
-                #selectInput("regressor3", "Independent Variable 3", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), selected = "Catholic"),
-                #selectInput("regressor4", "Independent Variable 4", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), selected = "Infant.Mortality"),
-                #checkbox group statt der drop downs? verbesserung für modellanpassung?
-                checkboxGroupInput("checkbox", "Check independent variables", choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"))
-
-              ),
-              mainPanel(tags$h4("Possible linear models:"),
-                        verbatimTextOutput("stepmodel"),
-                        actionButton("analysis","I have chosen my independents and want to ANALYSE"),
-                        verbatimTextOutput("modelFormula"),
-                        verbatimTextOutput("modelSummary"),
-                        verbatimTextOutput("value"),
-                        tableOutput("data1"),
-                        plotOutput("model_plot"),
-                        plotOutput("model_qq")
-
-              )
+             #tabPanel('swiss raw data', "Main Text"),
+             tabPanel('Exploration', tags$h3("Data Exploration: Distribution of Swiss datasets "), #tableOutput("rawdata_swiss"),
+                      sidebarLayout
+                      (
+                        
+                        sidebarPanel
+                        (
+                          radioButtons("dataset", "Select a Dataset", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" ))
+                          #selectInput("dataset", "Pick a variable", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" )),
+                          
+                        ),
+                        
+                        mainPanel(tags$h4("Data and Visualizations:"),
+                                  #tableOutput("rawdata_swiss"),
+                                  #verbatimTextOutput("summary"),
+                                  #plotOutput("hist"),
+                                  #plotOutput("boxplot"),
+                                  tabsetPanel(
+                                    tabPanel("All data", tableOutput("rawdata_swiss") ),
+                                    tabPanel("Summary", verbatimTextOutput("summary") ),
+                                    tabPanel("Histogram & Boxplot", plotOutput("hist"), plotOutput(outputId = "boxplot", brush = brushOpts(direction = "y", id= "plot_brush_"))),
+                                    tabPanel("QQ-Plot", plotOutput("qqplot")),
+                                    tabPanel("Scatterplot", plotOutput("scatter"))
+                                  )
+                        )
+                      )),
+             tabPanel('Correlation', "TEXT"),
+             tabPanel('Linear Model', tags$h3("Enter your dependent and independent variables"),
+                      sidebarLayout(
+                          sidebarPanel(
+                              selectInput("regressand", "Dependent Variable", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" )),
+                              checkboxGroupInput("checkbox", "Check independent variables", choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"))
+                          ),
+                          mainPanel(tags$h4("Possible linear models:"),
+                              verbatimTextOutput("stepmodel"),
+                              actionButton("analysis","I have chosen my independents and want to ANALYSE"),
+                              verbatimTextOutput("modelFormula"),
+                              verbatimTextOutput("modelSummary"),
+                              verbatimTextOutput("value"),
+                              tableOutput("data1"),
+                              plotOutput("model_plot"),
+                              plotOutput("model_qq")
+                          )
+                      )
             )
-    ))
 
-  
+  ))
+
 server <- function(input, output){
   datasetInput <- reactive({
     switch(input$dataset,
@@ -74,13 +77,24 @@ server <- function(input, output){
            "Agriculture" = swiss$Agriculture,
            "Education" = swiss$Education,
            "Catholic" = swiss$Catholic,
+           "Fertility" = swiss$Fertility,
            "Infant.Mortality" = swiss$Infant.Mortality
-           )
+    )
   })
+  
+  #--------Definition for Boxplot with interactive area 
+  # dinput = input$dataset
+  # dinput$Fertility = as.factor(dinput$Fertility)
+  
+  rds <- reactiveValues(data=swiss)
+  
+  #------------------------------------------------
+  
+  
   output$rawdata_swiss <- renderTable({
     dataset <- swiss
     dataset})  # head(dataset)
-   
+  
   output$summary <- renderPrint({
     dataset <- datasetInput()
     summary(dataset)})
@@ -89,9 +103,25 @@ server <- function(input, output){
     dataset <- datasetInput()
     hist(dataset)})
   
+  #---interactive boxplot---somehow we need to take feature into the ggplot- for now it is hard coded with only fertility--------------------------------------------------
   output$boxplot <- renderPlot({
-    dataset <- datasetInput()
-    boxplot(dataset)})
+    feature <- switch(input$dataset,
+                      "Fertility" = swiss$Fertility,
+                      "Agriculture" = swiss$Agriculture,
+                      "Education" = swiss$Education,
+                      "Catholic" = swiss$Catholic,
+                      "Fertility" = swiss$Fertility,
+                      "Infant.Mortality" = swiss$Infant.Mortality
+    )
+    
+    ggplot(rds$data, aes(y = Fertility)) + geom_boxplot(outlier.colour = "red") +guides(color=guide_legend(),size=guide_legend())
+  })
+  #observe function to make the plot reactive 
+  observe({
+    df = brushedPoints(rds$data, brush = input$plot_brush_, allRows = TRUE) 
+    rds$data = df[df$selected_== FALSE,]
+  })
+  #--------------------------------------------------------------------------------
   
   output$qqplot <- renderPlot({
     dataset <- datasetInput()
@@ -105,7 +135,7 @@ server <- function(input, output){
   
   myformula <- reactive({
     expln <- paste(input$checkbox, collapse = "+")
-    as.formula(paste(input$regressand, " ~ ", expln))
+    as.formula(paste(input$regressand, "~", expln))
   })
   
   mod <- eventReactive(input$analysis, {
@@ -117,10 +147,9 @@ server <- function(input, output){
   })
   
   output$stepmodel <- renderPrint({
-    #fit <- lm(swiss[,input$regressand] ~ myformula)
     fit = lm(myformula(), data=swiss)
-    #names(fit$coefficients) <- c("Intercept", input$checkbox)
-    step(fit)})
+    step(fit)
+  })
   
   output$modelSummary <- renderPrint({
     summary(mod())
@@ -131,15 +160,6 @@ server <- function(input, output){
     plot(fit)
   })
 
-
-  #output$data1 <- renderTable({
-   # swiss[, c("Fertility", input$checkbox), drop = F] # input$checkbox ist eine function, type closure
-  #}, rownames = T)
-  
-  #output$stepmodel <- renderPrint({
-   # fit <- lm(swiss[,input$regressand] ~ input$checkbox)
-    #names(fit$coefficients) <- c("Intercept", input$regressor1, input$regressor2, input$regressor3)
-    #step(fit)})
 }
 
 
