@@ -3,83 +3,102 @@ library(utils)
 library(gridExtra)
 library(ggplot2) 
 
-swiss <- swiss[,-3]    # remove "Examination" from Dataset
+#remove "Examination" from Dataset
 #snames <- colnames(s)
+swiss <- swiss[,-3]
 
-##definition for scatterplot
+##predefinition for Correlation "Scatterplot"
 #------------------------------------------------------------------------------------------------
-panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
+panel.cor <- function(x,
+                      y,
+                      digits = 2,
+                      prefix = "",
+                      cex.cor,
+                      ...)
 {
-  usr <- par("usr"); on.exit(par(usr))
+  usr <- par("usr")
+  on.exit(par(usr))
   par(usr = c(0, 1, 0, 1))
   r <- abs(cor(x, y))
   txt <- format(c(r, 0.123456789), digits = digits)[1]
   txt <- paste0(prefix, txt)
-  if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+  if (missing(cex.cor))
+    cex.cor <- 0.8 / strwidth(txt)
   text(0.5, 0.5, txt, cex = cex.cor * r)
 }
-#-------------------------------------------------------------------------------------
 
-ui <- fluidPage(
-  navbarPage(title = 'Swiss Data',
-             #tabPanel('swiss raw data', "Main Text"),
-             tabPanel('Exploration', tags$h3("Data Exploration: Distribution of Swiss datasets "), #tableOutput("rawdata_swiss"),
-                      sidebarLayout
-                      (
-                        
-                        sidebarPanel
-                        (
-                          radioButtons("dataset", "Select a Dataset", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" ))
-                          #selectInput("dataset", "Pick a variable", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" )),
-                          
-                        ),
-                        
-                        mainPanel(tags$h4("Data and Visualizations:"),
-                                  #tableOutput("rawdata_swiss"),
-                                  #verbatimTextOutput("summary"),
-                                  #plotOutput("hist"),
-                                  #plotOutput("boxplot"),
-                                  tabsetPanel(
-                                    tabPanel("All data", tableOutput("rawdata_swiss")),
-                                    tabPanel("Summary", verbatimTextOutput("summary")),
-                                    tabPanel("Histogram & Boxplot", plotOutput("hist"), plotOutput(outputId = "boxplot", brush = brushOpts(direction = "y", id= "plot_brush_"))),
-                                    tabPanel("QQ-Plot", plotOutput("qqplot"))#,
-                                    #tabPanel("Scatterplot", plotOutput("scatter"))
-                                  )
-                        )
-                      )),
-             tabPanel('Correlation', tags$h2("übersicht über alle korrelationen"),
-                      mainPanel(plotOutput("scatter"))
+#----------------------------------------------------------------------------------------------------------
+#Definition of the UserInterface
+ui <- fluidPage(navbarPage(
+  tags$h1(p(code('Swiss Data'))),
+  
+  #1st tab Panel------------------------------------------------------------------------------------------
+  tabPanel(tags$h2(p(em('Exploration'))),
+           tags$h3("Data Exploration: Distribution of Swiss datasets "), hr(), br(),
+           
+           sidebarLayout
+           (
+             sidebarPanel
+             (radioButtons(
+               "dataset",
+               "Select a Dataset",
+               choices = c(
+                 "Fertility",
+                 "Agriculture",
+                 "Education",
+                 "Catholic",
+                 "Infant.Mortality"
+               )
+             )),
              
-                      
-              ),
-             
-             
-             tabPanel('Linear Model', tags$h3("Enter your dependent and independent variables"),
-                      sidebarLayout(
-                          sidebarPanel(
-                              selectInput("regressand", "Dependent Variable", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" )),
-                              checkboxGroupInput("checkbox", "Check independent variables", choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"))
-                          ),
-                          mainPanel(tags$h4("Possible linear models:"),
-                                    tabsetPanel(
-                                      tabPanel("Step (AIC)", verbatimTextOutput("stepmodel"),
-                                               actionButton("analysis","I have chosen my independents and want to ANALYSE")
-                                              ),
-                                      tabPanel("Formel und Modell", verbatimTextOutput("modelFormula"),
-                                               verbatimTextOutput("modelSummary")
-                                               ),
-                                      tabPanel("Residuenplots", plotOutput("model_plot1"),
-                                               plotOutput("model_plot2"),
-                                               plotOutput("model_plot3"),
-                                               plotOutput("model_plot4")
-                                               )
-                                    )
-                          )
-                      )
-            )
+             mainPanel(tags$h4("Data and Visualizations:"),
+                       #tableOutput("rawdata_swiss"),
+                       #verbatimTextOutput("summary"),
+                       #plotOutput("hist"),
+                       #plotOutput("boxplot"),
+                       tabsetPanel(
+                         tabPanel("All data", tableOutput("rawdata_swiss")),
+                         tabPanel("Summary", verbatimTextOutput("summary")),
+                         tabPanel("Histogram & Boxplot", plotOutput("hist"), plotOutput(outputId = "boxplot", brush = brushOpts(direction = "x", id= "plot_brush_"))),
+                         tabPanel("QQ-Plot", plotOutput("qqplot"))#,
+                         #tabPanel("Scatterplot", plotOutput("scatter"))
+                       )
+             )
+           )),
+  
+  #2nd tabpanel-----------------------------------------------------------------------------------------------------------
+  tabPanel(tags$h2(p(em('Correlations'))), tags$h2("Overview all Correlations"),hr(),
+           mainPanel(plotOutput("scatter"))
+  ),
+  
+  #3rd tabpanel-------------------------------------------------------------------------------------------------------------
+  tabPanel(tags$h2(p(em('Linear Model'))), tags$h3("Enter your dependent and independent Variables"),hr(),
+           sidebarLayout(
+             sidebarPanel(
+               selectInput("regressand", "Dependent Variable", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" )),
+               checkboxGroupInput("checkbox", "Check independent variables - Check for at least one", choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"))
+             ),
+             mainPanel(tags$h4("Possible linear Models:"), hr(),
+                       tabsetPanel(
+                         tabPanel("Step (AIC)", verbatimTextOutput("stepmodel"),
+                                  actionButton("analysis","I have chosen my independents and want to ANALYSE")
+                         ),
+                         tabPanel("Formel und Modell", verbatimTextOutput("modelFormula"),
+                                  verbatimTextOutput("modelSummary")
+                         ),
+                         tabPanel("Residuenplots", plotOutput("model_plot1"),
+                                  plotOutput("model_plot2"),
+                                  plotOutput("model_plot3"),
+                                  plotOutput("model_plot4")
+                         )
+                       )
+             )
+           )
+  )
+  
+))
+#-----------------------------------------------------------------------------------------------------------------
 
-  ))
 
 server <- function(input, output){
   datasetInput <- reactive({
@@ -96,11 +115,8 @@ server <- function(input, output){
   #--------Definition for Boxplot with interactive area 
   # dinput = input$dataset
   # dinput$Fertility = as.factor(dinput$Fertility)
-  
   rds <- reactiveValues(data=swiss)
-  
   #------------------------------------------------
-  
   
   output$rawdata_swiss <- renderTable({
     dataset <- swiss
@@ -124,11 +140,13 @@ server <- function(input, output){
                       "Infant.Mortality" = swiss$Infant.Mortality
     )
     
-    ggplot(rds$data, aes(y = Fertility)) + geom_boxplot(outlier.colour = "red") +guides(color=guide_legend(),size=guide_legend())
-  })
+    ggplot(rds$data, aes(y = Fertility)) + geom_boxplot(outlier.colour = "red")+ coord_flip() +guides(color=guide_legend(),size=guide_legend())
+  }) #  + coord_flip() in the ggplot would make the boxplot horizontal
+  
+  
   #observe function to make the plot reactive 
   observe({
-    df = brushedPoints(rds$data, brush = input$plot_brush_, allRows = TRUE) 
+    df = brushedPoints(rds$data, brush = input$plot_brush_, allRows = TRUE)
     rds$data = df[df$selected_== FALSE,]
   })
   #--------------------------------------------------------------------------------
@@ -142,7 +160,7 @@ server <- function(input, output){
     pairs(swiss, lower.panel = panel.smooth, upper.panel = panel.cor,
           gap=0, row1attop=FALSE, main = "Scatterplot")})
   
-#Lineares Modell --------------------------------------------------------------------------------
+  #Lineares Modell --------------------------------------------------------------------------------
   myformula <- reactive({
     expln <- paste(input$checkbox, collapse = "+")
     as.formula(paste(input$regressand, "~", expln))
@@ -164,7 +182,7 @@ server <- function(input, output){
   output$modelSummary <- renderPrint({
     summary(mod())
   })
-
+  
   output$model_plot1 <- renderPlot({
     fit = lm(myformula(), data=swiss)
     #for (i in 1:4) {plot(fit, which = i)}
@@ -175,7 +193,7 @@ server <- function(input, output){
   output$model_plot2 <- renderPlot({
     fit = lm(myformula(), data=swiss)
     plot(fit, which=2)
-
+    
   })
   
   output$model_plot3 <- renderPlot({
@@ -189,7 +207,7 @@ server <- function(input, output){
     
   })
   
-#Lineares Modell Ende --------------------------------------------------------------------------------
+  #Lineares Modell Ende --------------------------------------------------------------------------------
 }
 
 
