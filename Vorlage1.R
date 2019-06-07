@@ -7,8 +7,7 @@ library(ggplot2)
 #snames <- colnames(s)
 swiss <- swiss[,-3]
 
-##predefinition for Correlation "Scatterplot"
-#------------------------------------------------------------------------------------------------
+##predefinition for Correlation "Scatterplot"----------------------------------------------
 panel.cor <- function(x,
                       y,
                       digits = 2,
@@ -30,10 +29,14 @@ panel.cor <- function(x,
 #----------------------------------------------------------------------------------------------------------
 #Definition of the UserInterface
 ui <- fluidPage(navbarPage(
-  tags$h1(p(code('Swiss Data'))),
+  tags$h2(p(code('Swiss Data'))),
   
-  #1st tab Panel------------------------------------------------------------------------------------------
-  tabPanel(tags$h2(p(em('Exploration'))),
+  #1st tab Panel--------------------------------------------------------------------------------------  
+  tabPanel(tags$h3(p(em('All data'))), tags$h2("Overview of data"), hr(), 
+           mainPanel(tableOutput("rawdata_swiss"))),
+  
+  #2st tab Panel------------------------------------------------------------------------------------------
+  tabPanel(tags$h3(p(em('Exploration'))),
            tags$h3("Data Exploration: Distribution of Swiss datasets "), hr(), br(),
            
            sidebarLayout
@@ -57,7 +60,6 @@ ui <- fluidPage(navbarPage(
                        #plotOutput("hist"),
                        #plotOutput("boxplot"),
                        tabsetPanel(
-                         tabPanel("All data", tableOutput("rawdata_swiss")),
                          tabPanel("Summary", verbatimTextOutput("summary")),
                          tabPanel("Histogram & Boxplot", plotOutput("hist"), plotOutput(outputId = "boxplot", brush = brushOpts(direction = "x", id= "plot_brush_"))),
                          tabPanel("QQ-Plot", plotOutput("qqplot"))#,
@@ -66,13 +68,14 @@ ui <- fluidPage(navbarPage(
              )
            )),
   
+  
   #2nd tabpanel-----------------------------------------------------------------------------------------------------------
-  tabPanel(tags$h2(p(em('Correlations'))), tags$h2("Overview all Correlations"),hr(),
+  tabPanel(tags$h3(p(em('Correlations'))), tags$h2("Overview all Correlations"),hr(),
            mainPanel(plotOutput("scatter"))
   ),
   
   #3rd tabpanel-------------------------------------------------------------------------------------------------------------
-  tabPanel(tags$h2(p(em('Linear Model'))), tags$h3("Enter your dependent and independent Variables"),hr(),
+  tabPanel(tags$h3(p(em('Linear Model'))), tags$h3("Enter your dependent and independent Variables"),hr(),
            sidebarLayout(
              sidebarPanel(
                selectInput("regressand", "Dependent Variable", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" )),
@@ -99,7 +102,7 @@ ui <- fluidPage(navbarPage(
 ))
 #-----------------------------------------------------------------------------------------------------------------
 
-
+#---server-------------------------------------------------------------------------------------------
 server <- function(input, output){
   datasetInput <- reactive({
     switch(input$dataset,
@@ -111,12 +114,6 @@ server <- function(input, output){
            "Infant.Mortality" = swiss$Infant.Mortality
     )
   })
-  
-  #--------Definition for Boxplot with interactive area 
-  # dinput = input$dataset
-  # dinput$Fertility = as.factor(dinput$Fertility)
-  rds <- reactiveValues(data=swiss)
-  #------------------------------------------------
   
   output$rawdata_swiss <- renderTable({
     dataset <- swiss
@@ -131,6 +128,11 @@ server <- function(input, output){
     hist(dataset)})
   
   #---interactive boxplot---somehow we need to take feature into the ggplot- for now it is hard coded with only fertility--------------------------------------------------
+  #--------Definition for Boxplot with interactive area 
+  # dinput = input$dataset
+  # dinput$Fertility = as.factor(dinput$Fertility)
+  rds <- reactiveValues(data=swiss)
+  
   output$boxplot <- renderPlot({
     feature <- switch(input$dataset,
                       "Fertility" = swiss$Fertility,
@@ -149,6 +151,7 @@ server <- function(input, output){
     df = brushedPoints(rds$data, brush = input$plot_brush_, allRows = TRUE)
     rds$data = df[df$selected_== FALSE,]
   })
+  
   #--------------------------------------------------------------------------------
   
   output$qqplot <- renderPlot({
