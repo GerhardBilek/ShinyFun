@@ -7,6 +7,7 @@ library(ggplot2)
 #snames <- colnames(s)
 swiss <- swiss[,-3]
 
+
 ##predefinition for Correlation "Scatterplot"----------------------------------------------
 panel.cor <- function(x,
                       y,
@@ -28,12 +29,16 @@ panel.cor <- function(x,
 
 #----------------------------------------------------------------------------------------------------------
 #Definition of the UserInterface
-ui <- fluidPage(navbarPage(
+ui <- fluidPage(
+  
+  navbarPage(
   tags$h2(p(code('Swiss Data'))),
+  
+  
   
   #1st tab Panel--------------------------------------------------------------------------------------  
   tabPanel(tags$h3(p(em('All data'))), tags$h2("Overview of data"), hr(), 
-           mainPanel(tableOutput("rawdata_swiss"))),
+           mainPanel( tableOutput("rawdata_swiss"))),
   
   #2nd tab Panel------------------------------------------------------------------------------------------
   tabPanel(tags$h3(p(em('Exploration'))),
@@ -57,7 +62,7 @@ ui <- fluidPage(navbarPage(
              mainPanel(tags$h4("Data and Visualizations:"),
                        tabsetPanel(
                          tabPanel("Summary", verbatimTextOutput("summary")),
-                         tabPanel("Histogram & Boxplot", plotOutput("hist"), plotOutput("boxplot")),
+                         tabPanel("Histogram & Boxplot", plotOutput("hist"), h4(textOutput("caption")),plotOutput("boxplot")),
                          tabPanel("QQ-Plot", plotOutput("qqplot"))#,
                          #tabPanel("Scatterplot", plotOutput("scatter"))
                        )
@@ -100,7 +105,7 @@ ui <- fluidPage(navbarPage(
 server <- function(input, output){
   datasetInput <- reactive({
     switch(input$dataset,
-           "Fertility" = swiss$Fertility, names=c("Fertility"),
+           "Fertility" = swiss$Fertility, 
            "Agriculture" = swiss$Agriculture,
            "Education" = swiss$Education,
            "Catholic" = swiss$Catholic,
@@ -108,6 +113,22 @@ server <- function(input, output){
            "Infant.Mortality" = swiss$Infant.Mortality
     )
   })
+  
+  #----------------Beschriftung------------- 
+  output$caption<-renderText({
+    switch(input$dataset,
+           "Fertility" = "Fertility", 
+           "Agriculture" = "Agriculture",
+           "Education" = "Education",
+           "Catholic" = "Catholic",
+           "Fertility" = "Fertility",
+           "Infant.Mortality" = "Infant.Mortality"
+           
+           )
+  })
+  
+  
+  output$value <- renderText({output$caption})
   
   output$rawdata_swiss <- renderTable({
     dataset <- swiss
@@ -119,15 +140,15 @@ server <- function(input, output){
   
   output$hist <- renderPlot({
     dataset <- datasetInput()
-    ggplot(swiss, aes(x=dataset)) + geom_histogram(binwidth = 1, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   
+    ggplot(swiss, aes(x=dataset)) + geom_histogram(binwidth = 1, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   + labs(x="")
     #hist(dataset)
     })
   
  output$boxplot <- renderPlot({
    dataset <- datasetInput()
-   
+
    #boxplot(dataset)
-    ggplot(swiss, aes(y = dataset)) + geom_boxplot(outlier.colour = "red")+ coord_flip() +guides(color=guide_legend(),size=guide_legend()) + labs(y=names(dataset))
+    ggplot(swiss, aes(y = dataset)) + geom_boxplot(outlier.colour = "red")+ coord_flip() +guides(color=guide_legend(),size=guide_legend())  + labs(y="")
   })
   
   #rds <- reactiveValues(data=swiss)
@@ -195,4 +216,11 @@ server <- function(input, output){
 }
 
 
+
 shinyApp(ui = ui, server = server)
+
+
+
+
+
+
