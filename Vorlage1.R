@@ -69,10 +69,7 @@ ui <- fluidPage(
                                       tabPanel("Formel und Modell", verbatimTextOutput("modelFormula"),
                                                verbatimTextOutput("modelSummary")
                                                ),
-                                      tabPanel("Residuenplots", plotOutput("model_plot1"),
-                                               plotOutput("model_plot2"),
-                                               plotOutput("model_plot3"),
-                                               plotOutput("model_plot4")
+                                      tabPanel("Residuenplots", plotOutput("model_plot")
                                                )
                                     )
                           )
@@ -164,30 +161,23 @@ server <- function(input, output){
   output$modelSummary <- renderPrint({
     summary(mod())
   })
-
-  output$model_plot1 <- renderPlot({
+  
+  output$model_plot <- renderPlot ({
     fit = lm(myformula(), data=swiss)
-    #for (i in 1:4) {plot(fit, which = i)}
-    plot(fit, which=1)
-    
+    par(mfrow=c(2,2))
+    plot(fit)
   })
   
-  output$model_plot2 <- renderPlot({
-    fit = lm(myformula(), data=swiss)
-    plot(fit, which=2)
-
-  })
   
-  output$model_plot3 <- renderPlot({
-    fit = lm(myformula(), data=swiss)
-    plot(fit, which=3)
-    
-  })
-  output$model_plot4 <- renderPlot({
-    fit = lm(myformula(), data=swiss)
-    plot(fit, which=4)
-    
-  })
+  #  button fürs logarithmieren von X, Y oder X&Y. residuenplots müssen das iwie observen? button bei plots
+  #  wohin? zum modell? neues modell anzeigen?
+  
+  # welche arten von transformationen sollen wir einbinden? polynom raw=TRUE (grad der polyn. zum eingeben), log, standardisieren. 
+  # logistische Regression?
+  # prüfungsstoff? als gruppe präsentieren. 
+  # anderer cooks plot  mfrow
+  # ausreißer nur für cooks distance mit groupcheckboxtool
+  # auswahl variablen (nur unkorrelierte variablen) / modellselektion (welche variablen hab ich nach modellselektion:  
   
 #Lineares Modell Ende --------------------------------------------------------------------------------
 }
