@@ -100,7 +100,7 @@ ui <- fluidPage(navbarPage(
 server <- function(input, output){
   datasetInput <- reactive({
     switch(input$dataset,
-           "Fertility" = swiss$Fertility,
+           "Fertility" = swiss$Fertility, names=c("Fertility"),
            "Agriculture" = swiss$Agriculture,
            "Education" = swiss$Education,
            "Catholic" = swiss$Catholic,
@@ -119,12 +119,15 @@ server <- function(input, output){
   
   output$hist <- renderPlot({
     dataset <- datasetInput()
-    hist(dataset)})
+    ggplot(swiss, aes(x=dataset)) + geom_histogram(binwidth = 1, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   
+    #hist(dataset)
+    })
   
  output$boxplot <- renderPlot({
    dataset <- datasetInput()
+   
    #boxplot(dataset)
-    ggplot(swiss, aes(y = dataset)) + geom_boxplot(outlier.colour = "red")+ coord_flip() +guides(color=guide_legend(),size=guide_legend())
+    ggplot(swiss, aes(y = dataset)) + geom_boxplot(outlier.colour = "red")+ coord_flip() +guides(color=guide_legend(),size=guide_legend()) + labs(y=names(dataset))
   })
   
   #rds <- reactiveValues(data=swiss)
