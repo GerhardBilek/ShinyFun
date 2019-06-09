@@ -35,7 +35,7 @@ ui <- fluidPage(navbarPage(
   tabPanel(tags$h3(p(em('All data'))), tags$h2("Overview of data"), hr(), 
            mainPanel(tableOutput("rawdata_swiss"))),
   
-  #2st tab Panel------------------------------------------------------------------------------------------
+  #2nd tab Panel------------------------------------------------------------------------------------------
   tabPanel(tags$h3(p(em('Exploration'))),
            tags$h3("Data Exploration: Distribution of Swiss datasets "), hr(), br(),
            
@@ -69,17 +69,17 @@ ui <- fluidPage(navbarPage(
            )),
   
   
-  #2nd tabpanel-----------------------------------------------------------------------------------------------------------
+  #3rdtabpanel-----------------------------------------------------------------------------------------------------------
   tabPanel(tags$h3(p(em('Correlations'))), tags$h2("Overview all Correlations"),hr(),
            mainPanel(plotOutput("scatter"))
   ),
   
-  #3rd tabpanel-------------------------------------------------------------------------------------------------------------
+  #4th tabpanel-------------------------------------------------------------------------------------------------------------
   tabPanel(tags$h3(p(em('Linear Model'))), tags$h3("Enter your dependent and independent Variables"),hr(),
            sidebarLayout(
              sidebarPanel(
                selectInput("regressand", "Dependent Variable", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" )),
-               checkboxGroupInput("checkbox", "Check independent variables - Check for at least one", choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"))
+               checkboxGroupInput("checkbox", "Check independent variables", choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"))
              ),
              mainPanel(tags$h4("Possible linear Models:"), hr(),
                        tabsetPanel(
@@ -89,6 +89,8 @@ ui <- fluidPage(navbarPage(
                          tabPanel("Formel und Modell", verbatimTextOutput("modelFormula"),
                                   verbatimTextOutput("modelSummary")
                          ),
+                         tabPanel("Residuenplots", plotOutput("model_plot")
+                                  
                          )
                        )
              )
@@ -97,7 +99,6 @@ ui <- fluidPage(navbarPage(
   
 ))
 #-----------------------------------------------------------------------------------------------------------------
-                         tabPanel("Residuenplots", plotOutput("model_plot1"),
 
 #---server-------------------------------------------------------------------------------------------
 server <- function(input, output){
