@@ -55,13 +55,9 @@ ui <- fluidPage(navbarPage(
              )),
              
              mainPanel(tags$h4("Data and Visualizations:"),
-                       #tableOutput("rawdata_swiss"),
-                       #verbatimTextOutput("summary"),
-                       #plotOutput("hist"),
-                       #plotOutput("boxplot"),
                        tabsetPanel(
                          tabPanel("Summary", verbatimTextOutput("summary")),
-                         tabPanel("Histogram & Boxplot", plotOutput("hist"), plotOutput(outputId = "boxplot", brush = brushOpts(direction = "x", id= "plot_brush_"))),
+                         tabPanel("Histogram & Boxplot", plotOutput("hist"), plotOutput("boxplot")),
                          tabPanel("QQ-Plot", plotOutput("qqplot"))#,
                          #tabPanel("Scatterplot", plotOutput("scatter"))
                        )
@@ -125,32 +121,23 @@ server <- function(input, output){
     dataset <- datasetInput()
     hist(dataset)})
   
-  #---interactive boxplot---somehow we need to take feature into the ggplot- for now it is hard coded with only fertility--------------------------------------------------
-  #--------Definition for Boxplot with interactive area 
-  # dinput = input$dataset
-  # dinput$Fertility = as.factor(dinput$Fertility)
-  rds <- reactiveValues(data=swiss)
-  
-  output$boxplot <- renderPlot({
-    feature <- switch(input$dataset,
-                      "Fertility" = swiss$Fertility,
-                      "Agriculture" = swiss$Agriculture,
-                      "Education" = swiss$Education,
-                      "Catholic" = swiss$Catholic,
-                      "Infant.Mortality" = swiss$Infant.Mortality
-    )
-    
-    ggplot(rds$data, aes(y = Fertility)) + geom_boxplot(outlier.colour = "red")+ coord_flip() +guides(color=guide_legend(),size=guide_legend())
-  }) #  + coord_flip() in the ggplot would make the boxplot horizontal
-  
-  
-  #observe function to make the plot reactive 
-  observe({
-    df = brushedPoints(rds$data, brush = input$plot_brush_, allRows = TRUE)
-    rds$data = df[df$selected_== FALSE,]
+ output$boxplot <- renderPlot({
+   dataset <- datasetInput()
+   #boxplot(dataset)
+    ggplot(swiss, aes(y = dataset)) + geom_boxplot(outlier.colour = "red")+ coord_flip() +guides(color=guide_legend(),size=guide_legend())
   })
   
-  #--------------------------------------------------------------------------------
+  #rds <- reactiveValues(data=swiss)
+  # dinput$Fertility = as.factor(dinput$Fertility)
+  #observe function to make the plot reactive 
+  #observe({
+   # df = brushedPoints(rds$data, brush = input$plot_brush_, allRows = TRUE)
+  #  rds$data = df[df$selected_== FALSE,]
+  #})
+
+
+  
+  #-----------------QQPLot---------------------------------------------------------------
   
   output$qqplot <- renderPlot({
     dataset <- datasetInput()
@@ -191,14 +178,14 @@ server <- function(input, output){
   })
   
   
-  #  button fürs logarithmieren von X, Y oder X&Y. residuenplots müssen das iwie observen? button bei plots
+  #  button f??rs logarithmieren von X, Y oder X&Y. residuenplots m??ssen das iwie observen? button bei plots
   #  wohin? zum modell? neues modell anzeigen?
   
   # welche arten von transformationen sollen wir einbinden? polynom raw=TRUE (grad der polyn. zum eingeben), log, standardisieren. 
   # logistische Regression?
-  # prüfungsstoff? als gruppe präsentieren. 
+  # pr??fungsstoff? als gruppe pr??sentieren. 
   # anderer cooks plot  mfrow
-  # ausreißer nur für cooks distance mit groupcheckboxtool
+  # ausrei??er nur f??r cooks distance mit groupcheckboxtool
   # auswahl variablen (nur unkorrelierte variablen) / modellselektion (welche variablen hab ich nach modellselektion:  
   
 #Lineares Modell Ende --------------------------------------------------------------------------------
