@@ -80,8 +80,13 @@ ui <- fluidPage(
            sidebarLayout(
              sidebarPanel(
                selectInput("regressand", "Dependent Variable", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" )),
-               checkboxGroupInput("checkbox", "Check independent variables", choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"))
-             ),
+               checkboxGroupInput("checkbox", "Check independent variables", 
+                                  choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
+                                  choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
+                                  selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality")),
+               checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(swiss)),  selected = c(rownames(swiss)))
+             
+               ),
              mainPanel(tags$h4("Possible linear Models:"), hr(),
                        tabsetPanel(
                          tabPanel("Step (AIC)", verbatimTextOutput("stepmodel"),
@@ -99,9 +104,9 @@ ui <- fluidPage(
   )
   
 ))
-#-----------------------------------------------------------------------------------------------------------------
 
-#---server-------------------------------------------------------------------------------------------
+
+#---SERVER-------------------------------------------------------------------------------------------
 server <- function(input, output){
   datasetInput <- reactive({
     switch(input$dataset,
@@ -196,7 +201,8 @@ server <- function(input, output){
   })
   
   output$model_plot <- renderPlot ({
-    fit = lm(myformula(), data=swiss)
+    fit = lm(myformula(), data=swiss[c(input$checkGroup),])  # Remove Outlier via Checkbox
+    #fit = lm(myformula(), data=swiss)
     par(mfrow=c(2,2))
     plot(fit)
   })
