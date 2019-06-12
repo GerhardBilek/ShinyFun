@@ -84,10 +84,9 @@ ui <- fluidPage(
                                   choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
                                   choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
                                   selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality")),
-               checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(swiss)),  selected = c(rownames(swiss)))
-             
-               ),
+               checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(swiss)),  selected = c(rownames(swiss))),
                radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom?"))
+             ),
              mainPanel(tags$h4("Possible linear Models:"), hr(),
                        tabsetPanel(
                          tabPanel("Step (AIC)", verbatimTextOutput("stepmodel"),
@@ -191,7 +190,7 @@ server <- function(input, output){
   })
   
   mod <- eventReactive(input$analysis, {
-    lm(myformula(), data = swiss)
+    lm(myformula(), data = swiss[c(input$checkGroup),])
   })
   
   output$modelFormula <- renderPrint({
@@ -200,6 +199,7 @@ server <- function(input, output){
   
   output$stepmodel <- renderPrint({
     fit = lm(myformula(), data=swiss)
+    #fit = lm(myformula(), data=swiss[c(input$checkGroup),]) # ändert nix
     step(fit)
   })
   
