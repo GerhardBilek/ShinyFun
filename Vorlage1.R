@@ -79,7 +79,8 @@ ui <- fluidPage(navbarPage(
            sidebarLayout(
              sidebarPanel(
                selectInput("regressand", "Dependent Variable", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" )),
-               checkboxGroupInput("checkbox", "Check independent variables", choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"))
+               checkboxGroupInput("checkbox", "Check independent variables", choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality")),
+               radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom?"))
              ),
              mainPanel(tags$h4("Possible linear Models:"), hr(),
                        tabsetPanel(
@@ -165,6 +166,12 @@ server <- function(input, output){
   myformula <- reactive({
     expln <- paste(input$checkbox, collapse = "+")
     as.formula(paste(input$regressand, "~", expln))
+    # einen haufen buttons für diverse transf. iwo muss sich formel ändern
+    # if? wenn input$transformation == "LOGX" dann as.formula(paste(input$regressand), "~", log(expln)) etc
+    #if (input$transformation == "Log(Y)") {
+      #expln <- paste(input$checkbox, collapse = "+") # Error in log: non-numeric argument to mathematical function
+      #as.formula(paste(log(input$regressand), "~", expln))
+      #}
   })
   
   mod <- eventReactive(input$analysis, {
