@@ -13,7 +13,7 @@ ui <- fluidPage(
                          choiceNames = c("Nr of pregnancies", "plasma glucose conc", "blood pressure", "skin fold thickness", "BMI", "ped", "age", "type"), 
                          choiceValues = c("npreg", "glu", "bp", "skin", "bmi", "ped", "age", "type"), 
                          selected = c("Nr of pregnancies", "plasma glucose conc", "blood pressure", "skin fold thickness", "BMI", "ped", "age", "type")),
-      checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(swiss)),  selected = c(rownames(swiss))),
+      checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(pima)),  selected = c(rownames(pima))),
       radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom?"))
     ),
     mainPanel(tags$h4("Possible linear Models:"), hr(),
@@ -52,7 +52,7 @@ server <- function(input, output) {
   })
   
   mod <- eventReactive(input$analysis, {
-    lm(myformula(), data = pima[c(input$checkGroup),])
+    glm(myformula(), family = binomial(link=("logit")), data = pima[c(input$checkGroup),])
   })
   
   output$modelFormula <- renderPrint({
@@ -60,7 +60,7 @@ server <- function(input, output) {
   })
   
   output$stepmodel <- renderPrint({
-    fit = lm(myformula(), data=pima)
+    fit = glm(myformula(), family = binomial(link=("logit")), data=pima)
     #fit = lm(myformula(), data=swiss[c(input$checkGroup),]) # ändert nix
     step(fit)
   })
@@ -70,7 +70,7 @@ server <- function(input, output) {
   })
   
   output$model_plot <- renderPlot ({
-    fit = lm(myformula(), data=pima[c(input$checkGroup),])  # Remove Outlier via Checkbox
+    fit = glm(myformula(), family = binomial(link=("logit")), data=pima[c(input$checkGroup),])  # Remove Outlier via Checkbox
     #fit = lm(myformula(), data=swiss)
     par(mfrow=c(2,2))
     plot(fit)
