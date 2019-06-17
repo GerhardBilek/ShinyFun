@@ -6,6 +6,7 @@ library(ggplot2)
 #remove "Examination" from Dataset
 #snames <- colnames(s)
 swiss <- swiss[,-3]
+#swiss_scale <- scale(swiss)
 
 
 ##predefinition for Correlation "Scatterplot"----------------------------------------------
@@ -85,7 +86,7 @@ ui <- fluidPage(
                                   choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
                                   selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality")),
                checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(swiss)),  selected = c(rownames(swiss))),
-               radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom?"))
+               radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom"))
              ),
              mainPanel(tags$h4("Possible linear Models:"), hr(),
                        tabsetPanel(
@@ -178,10 +179,37 @@ server <- function(input, output){
           gap=0, row1attop=FALSE, main = "Scatterplot")})
   
   #Lineares Modell --------------------------------------------------------------------------------
+  # "No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom"
+  
   myformula <- reactive({
-    expln <- paste("log(", input$checkbox, ")", collapse = "+")
+    if (input$transformation == "No Transformation") {
+      expln <- paste(input$checkbox, collapse = "+")
+      as.formula(paste(input$regressand, "~", expln))
+    } else if (input$transformation == "Log(X)") {
+      expln <- paste("log(", input$checkbox, ")", collapse = "+")
+      as.formula(paste(input$regressand, "~", expln))
+    } else if (input$transformation == "Log(Y)"){
+      expln <- paste(input$checkbox, collapse = "+")
+      as.formula(paste("log(",input$regressand, ")", "~", expln))
+    } else if (input$transformation == "Log/Log") {
+      expln <- paste("log(", input$checkbox, ")", collapse = "+")
+      as.formula(paste("log(",input$regressand, ")", "~", expln))
+    } else if (input$transformation == "Standardisation") {
+      expln <- paste(input$checkbox, collapse = "+")
+      
+      #temp <- scale(input$checkbox, center=TRUE, scale = TRUE)
+      #agri2 <- scale(swiss$Agriculture, center=TRUE, scale = TRUE)
+      #cath2 <- scale(swiss$Catholic, center=TRUE, scale = TRUE)
+      #expln <- paste("scale(", input$checkbox, ", center=TRUE, scale = TRUE)", collapse = "+")
+      as.formula(paste(input$regressand, "~", expln))
+    } else if (input$transformation == "Polynom") {
+      
+    }
+    
+    
+    #expln <- paste("log(", input$checkbox, ")", collapse = "+")
     #as.formula(paste(input$regressand, "~", expln))
-    as.formula(paste("log(",input$regressand, ")", "~", expln))
+    #as.formula(paste("log(",input$regressand, ")", "~", expln))
     
     # einen haufen buttons für diverse transf. iwo muss sich formel ändern
     # if? wenn input$transformation == "LOGX" dann as.formula(paste(input$regressand), "~", log(expln)) etc
@@ -192,13 +220,15 @@ server <- function(input, output){
   })
   
   mod <- eventReactive(input$analysis, {
+    if (input$transformation == "Standardisation") {
     lm(myformula(), data = swiss[c(input$checkGroup),])
+    } else {
+      lm(myformula(), data = swiss[c(input$checkGroup),])
+    }
   })
   
   output$modelFormula <- renderPrint({
     myformula()
-    expln <- paste("log(",input$checkbox,")", collapse = "+")
-    expln
     #temp <- swiss[,input$regressand]
     #temp <- log(temp)
     #temp
