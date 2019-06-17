@@ -179,7 +179,7 @@ server <- function(input, output){
   
   #Lineares Modell --------------------------------------------------------------------------------
   myformula <- reactive({
-    expln <- paste(input$checkbox, collapse = "+")
+    expln <- paste("log(", input$checkbox, ")", collapse = "+")
     #as.formula(paste(input$regressand, "~", expln))
     as.formula(paste("log(",input$regressand, ")", "~", expln))
     
@@ -197,6 +197,8 @@ server <- function(input, output){
   
   output$modelFormula <- renderPrint({
     myformula()
+    expln <- paste("log(",input$checkbox,")", collapse = "+")
+    expln
     #temp <- swiss[,input$regressand]
     #temp <- log(temp)
     #temp
