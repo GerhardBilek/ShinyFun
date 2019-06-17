@@ -180,7 +180,9 @@ server <- function(input, output){
   #Lineares Modell --------------------------------------------------------------------------------
   myformula <- reactive({
     expln <- paste(input$checkbox, collapse = "+")
-    as.formula(paste(input$regressand, "~", expln))
+    #as.formula(paste(input$regressand, "~", expln))
+    as.formula(paste("log(",input$regressand, ")", "~", expln))
+    
     # einen haufen buttons für diverse transf. iwo muss sich formel ändern
     # if? wenn input$transformation == "LOGX" dann as.formula(paste(input$regressand), "~", log(expln)) etc
     #if (input$transformation == "Log(Y)") {
@@ -195,6 +197,9 @@ server <- function(input, output){
   
   output$modelFormula <- renderPrint({
     myformula()
+    #temp <- swiss[,input$regressand]
+    #temp <- log(temp)
+    #temp
   })
   
   output$stepmodel <- renderPrint({
