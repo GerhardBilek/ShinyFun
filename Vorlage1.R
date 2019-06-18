@@ -5,16 +5,18 @@ library(ggplot2)
 
 #remove "Examination" from Dataset
 #snames <- colnames(s)
-swiss <- swiss[,-3]
+#swiss <- swiss[,-3]
+
 
 # versuch, alles im vorhinein zu normalisieren und dann unten mit den normalisierten daten zu arbeiten
-fert_scale <- scale(swiss$Fertility, center = TRUE, scale = TRUE)
-edu_scale <- scale(swiss$Education, center = TRUE, scale = TRUE)
-agri_scale <- scale(swiss$Agriculture, center = TRUE, scale = TRUE)
-inf_scale <- scale(swiss$Infant.Mortality, center = TRUE, scale = TRUE)
-cath_scale <- scale(swiss$Catholic, center = TRUE, scale = TRUE)
-swiss_scale <- cbind(fert_scale, edu_scale, agri_scale, inf_scale, cath_scale)
-
+scale_Fertility <- scale(swiss$Fertility, center = TRUE, scale = TRUE)
+scale_Education <- scale(swiss$Education, center = TRUE, scale = TRUE)
+scale_Agriculture <- scale(swiss$Agriculture, center = TRUE, scale = TRUE)
+scale_Infant.Mortality <- scale(swiss$Infant.Mortality, center = TRUE, scale = TRUE)
+scale_Catholic <- scale(swiss$Catholic, center = TRUE, scale = TRUE)
+swiss_scale <- cbind(scale_Fertility, scale_Education, scale_Agriculture, scale_Infant.Mortality, scale_Catholic)
+colnames(swiss_scale) <- c("scale_Fertility", "scale_Education", "scale_Agriculture", "scale_Infant.Mortality", "scale_Catholic")
+swiss_scale <- as.data.frame(swiss_scale)
 
 
 ##predefinition for Correlation "Scatterplot"----------------------------------------------
@@ -203,11 +205,11 @@ server <- function(input, output){
       expln <- paste("log(", input$checkbox, ")", collapse = "+")
       as.formula(paste("log(",input$regressand, ")", "~", expln))
     } else if (input$transformation == "Standardisation") {
-      expln <- paste(input$checkbox, collapse = "+")
+      #expln <- paste(input$checkbox, collapse = "+")
       
       #temp <- scale(input$checkbox, center=TRUE, scale = TRUE)
       #expln <- paste("scale(", input$checkbox, ", center=TRUE, scale = TRUE)", collapse = "+") # geht nicht
-      as.formula(paste(input$regressand, "~", expln))
+      #as.formula(paste(input$regressand, "~", expln))
     } else if (input$transformation == "Polynom") {
       
     }
@@ -216,7 +218,8 @@ server <- function(input, output){
   
   mod <- eventReactive(input$analysis, {
     if (input$transformation == "Standardisation") { # vlt muss man hier standardisieren?
-    lm(myformula(), data = swiss_scale[c(input$checkGroup),]) # hier skalierte daten angeben wäre vlt das einfachste
+    #lm(myformula(), data = swiss_scale[c(input$checkGroup),]) # hier skalierte daten angeben wäre vlt das einfachste
+      lm(myformula(), data = swiss_scale)
     } else {
       lm(myformula(), data = swiss[c(input$checkGroup),])
     }
