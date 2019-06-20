@@ -95,8 +95,9 @@ ui <- fluidPage(
                                   choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
                                   choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
                                   selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality")),
-               checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(swiss)),  selected = c(rownames(swiss))),
-               radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom"))
+               radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom")),
+               checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(swiss)),  selected = c(rownames(swiss)))
+               
              ),
              mainPanel(tags$h4("Possible linear Models:"), hr(),
                        tabsetPanel(
@@ -218,7 +219,7 @@ server <- function(input, output){
   
   mod <- eventReactive(input$analysis, {
     if (input$transformation == "Standardisation") { # vlt muss man hier standardisieren?
-    #lm(myformula(), data = swiss_scale[c(input$checkGroup),]) # hier skalierte daten angeben wäre vlt das einfachste
+    #lm(myformula(), data = swiss_scale[c(input$checkGroup),]) # hier skalierte daten angeben w??re vlt das einfachste
       lm(myformula(), data = swiss_scale)
     } else {
       lm(myformula(), data = swiss[c(input$checkGroup),])
@@ -234,7 +235,7 @@ server <- function(input, output){
   
   output$stepmodel <- renderPrint({
     fit = lm(myformula(), data=swiss)
-    #fit = lm(myformula(), data=swiss[c(input$checkGroup),]) # ändert nix
+    #fit = lm(myformula(), data=swiss[c(input$checkGroup),]) # ??ndert nix
     step(fit)
   })
   
