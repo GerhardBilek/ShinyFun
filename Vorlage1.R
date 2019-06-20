@@ -234,8 +234,8 @@ server <- function(input, output){
   })
   
   output$stepmodel <- renderPrint({
-    fit = lm(myformula(), data=swiss)
-    #fit = lm(myformula(), data=swiss[c(input$checkGroup),]) # ??ndert nix
+    #fit = lm(myformula(), data=swiss)
+    fit = lm(myformula(), data=swiss[c(input$checkGroup),]) # ??ndert nix; bei mir funktioniert es (Gerry)
     step(fit)
   })
   
