@@ -7,16 +7,10 @@ library(ggplot2)
 #snames <- colnames(s)
 #swiss <- swiss[,-3]
 
+awesomeData <- swiss
 
 # versuch, alles im vorhinein zu normalisieren und dann unten mit den normalisierten daten zu arbeiten
-scale_Fertility <- scale(swiss$Fertility, center = TRUE, scale = TRUE)
-scale_Education <- scale(swiss$Education, center = TRUE, scale = TRUE)
-scale_Agriculture <- scale(swiss$Agriculture, center = TRUE, scale = TRUE)
-scale_Infant.Mortality <- scale(swiss$Infant.Mortality, center = TRUE, scale = TRUE)
-scale_Catholic <- scale(swiss$Catholic, center = TRUE, scale = TRUE)
-swiss_scale <- cbind(scale_Fertility, scale_Education, scale_Agriculture, scale_Infant.Mortality, scale_Catholic)
-colnames(swiss_scale) <- c("scale_Fertility", "scale_Education", "scale_Agriculture", "scale_Infant.Mortality", "scale_Catholic")
-swiss_scale <- as.data.frame(swiss_scale)
+
 
 
 ##predefinition for Correlation "Scatterplot"----------------------------------------------
@@ -43,78 +37,80 @@ panel.cor <- function(x,
 ui <- fluidPage(
   
   navbarPage(
-  tags$h2(p(code('Swiss Data'))),
-  
-  
-  
-  #1st tab Panel--------------------------------------------------------------------------------------  
-  tabPanel(tags$h3(p(em('All data'))), tags$h2("Overview of data"), hr(), 
-           mainPanel( tableOutput("rawdata_swiss"))),
-  
-  #2nd tab Panel------------------------------------------------------------------------------------------
-  tabPanel(tags$h3(p(em('Exploration'))),
-           tags$h3("Data Exploration: Distribution of Swiss datasets "), hr(), br(),
-           
-           sidebarLayout
-           (
-             sidebarPanel
-             (radioButtons(
-               "dataset",
-               "Select a Dataset",
-               choices = c(
-                 "Fertility",
-                 "Agriculture",
-                 "Education",
-                 "Catholic",
-                 "Infant.Mortality"
+    tags$h2(p(code('Swiss Data'))),
+    
+    
+    
+    #1st tab Panel--------------------------------------------------------------------------------------  
+    tabPanel(tags$h3(p(em('All data'))), tags$h2("Overview of data"), hr(), 
+             mainPanel( tableOutput("rawdata_swiss"))),
+    
+    #2nd tab Panel------------------------------------------------------------------------------------------
+    tabPanel(tags$h3(p(em('Exploration'))),
+             tags$h3("Data Exploration: Distribution of Swiss datasets "), hr(), br(),
+             
+             sidebarLayout
+             (
+               sidebarPanel
+               (radioButtons(
+                 "dataset",
+                 "Select a Dataset",
+                 choices = c(
+                   "Fertility",
+                   "Agriculture",
+                   "Education",
+                   "Catholic",
+                   "Infant.Mortality"
+                 )
+               )),
+               
+               mainPanel(tags$h4("Data and Visualizations:"),
+                         tabsetPanel(
+                           tabPanel("Summary", verbatimTextOutput("summary")),
+                           tabPanel("Histogram & Boxplot", plotOutput("hist"), h4(textOutput("caption")),plotOutput("boxplot")),
+                           tabPanel("QQ-Plot", plotOutput("qqplot"))#,
+                           #tabPanel("Scatterplot", plotOutput("scatter"))
+                         )
                )
              )),
-             
-             mainPanel(tags$h4("Data and Visualizations:"),
-                       tabsetPanel(
-                         tabPanel("Summary", verbatimTextOutput("summary")),
-                         tabPanel("Histogram & Boxplot", plotOutput("hist"), h4(textOutput("caption")),plotOutput("boxplot")),
-                         tabPanel("QQ-Plot", plotOutput("qqplot"))#,
-                         #tabPanel("Scatterplot", plotOutput("scatter"))
-                       )
-             )
-           )),
-  
-  
-  #3rdtabpanel-----------------------------------------------------------------------------------------------------------
-  tabPanel(tags$h3(p(em('Correlations'))), tags$h2("Overview all Correlations"),hr(),
-           mainPanel(plotOutput("scatter"))
-  ),
-  
-  #4th tabpanel-------------------------------------------------------------------------------------------------------------
-  tabPanel(tags$h3(p(em('Linear Model'))), tags$h3("Enter your dependent and independent Variables"),hr(),
-           sidebarLayout(
-             sidebarPanel(
-               selectInput("regressand", "Dependent Variable", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" )),
-               checkboxGroupInput("checkbox", "Check independent variables", 
-                                  choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
-                                  choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
-                                  selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality")),
-               checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(swiss)),  selected = c(rownames(swiss))),
-               radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom"))
-             ),
-             mainPanel(tags$h4("Possible linear Models:"), hr(),
-                       tabsetPanel(
-                         tabPanel("Step (AIC)", verbatimTextOutput("stepmodel"),
-                                  actionButton("analysis","I have chosen my independents and want to ANALYSE")
-                         ),
-                         tabPanel("Formel und Modell", verbatimTextOutput("modelFormula"),
-                                  verbatimTextOutput("modelSummary")
-                         ),
-                         tabPanel("Residuenplots", plotOutput("model_plot")
-                                  
+    
+    
+    #3rdtabpanel-----------------------------------------------------------------------------------------------------------
+    tabPanel(tags$h3(p(em('Correlations'))), tags$h2("Overview all Correlations"),hr(),
+             mainPanel(plotOutput("scatter"))
+    ),
+    
+    #4th tabpanel-------------------------------------------------------------------------------------------------------------
+    tabPanel(tags$h3(p(em('Linear Model'))), tags$h3("Enter your dependent and independent Variables"),hr(),
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput("regressand", "Dependent Variable", choices = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality" )),
+                 checkboxGroupInput("checkbox", "Check independent variables", 
+                                    choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
+                                    choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
+                                    selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality")),
+                 radioButtons("standardize", "Which data to use ...", choices = c("regular data", "standardized data")),
+                 radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Polynom")),
+                 checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(swiss)),  selected = c(rownames(swiss)))
+                 
+               ),
+               mainPanel(tags$h4("Possible linear Models:"), hr(),
+                         tabsetPanel(
+                           tabPanel("Step (AIC)", verbatimTextOutput("stepmodel"),
+                                    actionButton("analysis","I have chosen my independents and want to ANALYSE")
+                           ),
+                           tabPanel("Formel und Modell", verbatimTextOutput("modelFormula"),
+                                    verbatimTextOutput("modelSummary")
+                           ),
+                           tabPanel("Residuenplots", plotOutput("model_plot")
+                                    
+                           )
                          )
-                       )
+               )
              )
-           )
-  )
-  
-))
+    )
+    
+  ))
 
 
 #---SERVER-------------------------------------------------------------------------------------------
@@ -140,7 +136,7 @@ server <- function(input, output){
            "Fertility" = "Fertility",
            "Infant.Mortality" = "Infant.Mortality"
            
-           )
+    )
   })
   
   
@@ -158,12 +154,12 @@ server <- function(input, output){
     dataset <- datasetInput()
     ggplot(swiss, aes(x=dataset)) + geom_histogram(binwidth = 1, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   + labs(x="")
     #hist(dataset)
-    })
+  })
   
- output$boxplot <- renderPlot({
-   dataset <- datasetInput()
-
-   #boxplot(dataset)
+  output$boxplot <- renderPlot({
+    dataset <- datasetInput()
+    
+    #boxplot(dataset)
     ggplot(swiss, aes(y = dataset)) + geom_boxplot(outlier.colour = "red")+ coord_flip() +guides(color=guide_legend(),size=guide_legend())  + labs(y="")
   })
   
@@ -171,11 +167,11 @@ server <- function(input, output){
   # dinput$Fertility = as.factor(dinput$Fertility)
   #observe function to make the plot reactive 
   #observe({
-   # df = brushedPoints(rds$data, brush = input$plot_brush_, allRows = TRUE)
+  # df = brushedPoints(rds$data, brush = input$plot_brush_, allRows = TRUE)
   #  rds$data = df[df$selected_== FALSE,]
   #})
-
-
+  
+  
   
   #-----------------QQPLot---------------------------------------------------------------
   
@@ -204,21 +200,40 @@ server <- function(input, output){
     } else if (input$transformation == "Log/Log") {
       expln <- paste("log(", input$checkbox, ")", collapse = "+")
       as.formula(paste("log(",input$regressand, ")", "~", expln))
-    } else if (input$transformation == "Standardisation") {
-      #expln <- paste(input$checkbox, collapse = "+")
+    } else if (input$standardize == "regular data") {
+      #rm(swiss)
+      #swiss_norm <- swiss
       
-      #temp <- scale(input$checkbox, center=TRUE, scale = TRUE)
-      #expln <- paste("scale(", input$checkbox, ", center=TRUE, scale = TRUE)", collapse = "+") # geht nicht
-      #as.formula(paste(input$regressand, "~", expln))
-    } else if (input$transformation == "Polynom") {
+      expln <- paste(input$checkbox, collapse = "+")
+      as.formula(paste(input$regressand, "~", expln))
+      
+    } else if (input$standardize == "standardized data"){
+      #rm(awesomeData)
+      Fertility <- scale(awesomeData$Fertility, center = TRUE, scale = TRUE)
+      Education <- scale(awesomeData$Education, center = TRUE, scale = TRUE)
+      Agriculture <- scale(awesomeData$Agriculture, center = TRUE, scale = TRUE)
+      Infant.Mortality <- scale(awesomeData$Infant.Mortality, center = TRUE, scale = TRUE)
+      Catholic <- scale(awesomeData$Catholic, center = TRUE, scale = TRUE)
+      swiss_scale <- cbind(Fertility, Education, Agriculture, Infant.Mortality, Catholic)
+      #colnames(swiss_scale) <- c("scale_Fertility", "scale_Education", "scale_Agriculture", "scale_Infant.Mortality", "scale_Catholic")
+      colnames(swiss_scale) <- c("Fertility", "Education", "Agriculture", "Infant.Mortality", "Catholic")
+      
+      swiss_scale <- as.data.frame(swiss_scale)
+      #swiss <- swiss_scale
+      
+      expln <- paste(input$checkbox, collapse = "+")
+      as.formula(paste(input$regressand, "~", expln))
+    }
+    
+    else if (input$transformation == "Polynom") {
       
     }
     
   })
   
   mod <- eventReactive(input$analysis, {
-    if (input$transformation == "Standardisation") { # vlt muss man hier standardisieren?
-    #lm(myformula(), data = swiss_scale[c(input$checkGroup),]) # hier skalierte daten angeben wäre vlt das einfachste
+    if (input$standardize == "standardized data") { 
+      # lm(myformula(), data = swiss_scale[c(input$checkGroup),]) # das sich input$checkGroup nicht auf swiss scale bezieht, geht diese zeile nicht
       lm(myformula(), data = swiss_scale)
     } else {
       lm(myformula(), data = swiss[c(input$checkGroup),])
@@ -227,14 +242,15 @@ server <- function(input, output){
   
   output$modelFormula <- renderPrint({
     myformula()
+    #head(swiss)
     #temp <- swiss[,input$regressand]
     #temp <- log(temp)
     #temp
   })
   
   output$stepmodel <- renderPrint({
-    fit = lm(myformula(), data=swiss)
-    #fit = lm(myformula(), data=swiss[c(input$checkGroup),]) # ändert nix
+    #fit = lm(myformula(), data=swiss)
+    fit = lm(myformula(), data=swiss[c(input$checkGroup),]) # ??ndert nix; bei mir funktioniert es (Gerry)
     step(fit)
   })
   
@@ -260,7 +276,7 @@ server <- function(input, output){
   # ausrei??er nur f??r cooks distance mit groupcheckboxtool
   # auswahl variablen (nur unkorrelierte variablen) / modellselektion (welche variablen hab ich nach modellselektion:  
   
-#Lineares Modell Ende --------------------------------------------------------------------------------
+  #Lineares Modell Ende --------------------------------------------------------------------------------
 }
 
 
