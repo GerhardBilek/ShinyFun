@@ -158,7 +158,7 @@ server <- function(input, output){
   
   output$hist <- renderPlot({
     dataset <- datasetInput()
-    ggplot(swiss, aes(x=dataset)) + geom_histogram(binwidth = 1, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   + labs(x="")
+    ggplot(swiss, aes(x=dataset)) + geom_histogram(binwidth = 5, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   + labs(x="")
     #hist(dataset)
   })
   
