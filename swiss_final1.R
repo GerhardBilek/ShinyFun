@@ -6,7 +6,7 @@ library(ggplot2)
 #remove "Examination" from Dataset
 #snames <- colnames(s)
 
-swiss <- swiss[,-3]
+#swiss <- swiss[,-3]
 
 awesomeData <- swiss
 
