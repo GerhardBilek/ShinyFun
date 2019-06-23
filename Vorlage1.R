@@ -102,7 +102,12 @@ ui <- fluidPage(
                            tabPanel("Formel und Modell", verbatimTextOutput("modelFormula"),
                                     verbatimTextOutput("modelSummary")
                            ),
-                           tabPanel("Residuenplots", plotOutput("model_plot")
+                           tabPanel("Residuenplots",
+                                    conditionalPanel(condition = "input.transformation == 'Polynom'",
+                                    numericInput("a2", "a2", value = 0),
+                                    numericInput("a1", "a1", value = 1),
+                                    numericInput("a0", "a0", value = 0)),
+                                    plotOutput("model_plot")
                                     
                            )
                          )
@@ -183,7 +188,7 @@ server <- function(input, output){
     dataset <- datasetInput()
     pairs(swiss, lower.panel = panel.smooth, upper.panel = panel.cor,
           gap=0, row1attop=FALSE, main = "Scatterplot")})
-  
+    
   #Lineares Modell --------------------------------------------------------------------------------
   # "No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom"
   
@@ -191,15 +196,27 @@ server <- function(input, output){
     if (input$transformation == "No Transformation") {
       expln <- paste(input$checkbox, collapse = "+")
       as.formula(paste(input$regressand, "~", expln))
+    
     } else if (input$transformation == "Log(X)") {
       expln <- paste("log(", input$checkbox, ")", collapse = "+")
       as.formula(paste(input$regressand, "~", expln))
+      
     } else if (input$transformation == "Log(Y)"){
       expln <- paste(input$checkbox, collapse = "+")
       as.formula(paste("log(",input$regressand, ")", "~", expln))
+      
     } else if (input$transformation == "Log/Log") {
       expln <- paste("log(", input$checkbox, ")", collapse = "+")
       as.formula(paste("log(",input$regressand, ")", "~", expln))
+
+    }    
+      else if (input$transformation == "Polynom") {
+        expln <- paste(input$checkbox, collapse = "+")
+        
+        as.formula(paste(input$a2,"*(",input$regressand, "^2) + ",
+                         input$a1,"*(",input$regressand,") + ",
+                         input$a0, "~", expln))
+        
     } else if (input$standardize == "regular data") {
       #rm(swiss)
       #swiss_norm <- swiss
@@ -224,10 +241,7 @@ server <- function(input, output){
       expln <- paste(input$checkbox, collapse = "+")
       as.formula(paste(input$regressand, "~", expln))
     }
-    
-    else if (input$transformation == "Polynom") {
-      
-    }
+
     
   })
   
