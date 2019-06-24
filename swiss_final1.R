@@ -210,16 +210,23 @@ server <- function(input, output){
       expln <- paste("log(", input$checkbox, ")", collapse = "+")
       as.formula(paste("log(",input$regressand, ")", "~", expln))
 
-    } else if (input$transformation == "Polynom") {
+    } else if (input$transformation == "Polynom"){
       #Fertility <- Fertility^2
       #Agriculture <- Agriculture^2
       #Education <- Education^2
       #Infant.Mortality <- Infant.Mortality^2
       #Catholic <- Catholic^2
       
-      expln <- paste( "(", input$checkbox, ")^2", collapse = "+")
-      as.formula(paste(input$regressand, "~", expln))
+      #expln <- paste( "(", input$checkbox, ")^2", collapse = "+")
+      #expln <- paste( input$checkbox, "^2", collapse = "+")
+      #expln <- paste("log(", input$checkbox, ")", collapse = "+")
+      #expln <- paste("log(", input$checkbox, ")^3", collapse = "+")
       
+      #expln <- paste(input$checkbox, collapse = "+")
+      expln <- paste("(QA2 <-(",input$checkbox,")^2)", collapse = "+")
+      as.formula(paste(input$regressand, "~" , expln))
+      
+      #So soll es aussehen .... lm(swiss$Fertility ~ (boom1<-(swiss$Agriculture)^2))
     }   
       #else if (input$transformation == "Polynom") {
        # expln <- paste(input$checkbox, collapse = "+")
