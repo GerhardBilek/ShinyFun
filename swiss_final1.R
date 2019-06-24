@@ -211,16 +211,22 @@ server <- function(input, output){
       as.formula(paste("log(",input$regressand, ")", "~", expln))
 
     } else if (input$transformation == "Polynom") {
-      expln <- paste(input$checkbox, "^2", collapse = "+")
+      #Fertility <- Fertility^2
+      #Agriculture <- Agriculture^2
+      #Education <- Education^2
+      #Infant.Mortality <- Infant.Mortality^2
+      #Catholic <- Catholic^2
+      
+      expln <- paste( "(", input$checkbox, ")^2", collapse = "+")
       as.formula(paste(input$regressand, "~", expln))
       
     }   
       #else if (input$transformation == "Polynom") {
        # expln <- paste(input$checkbox, collapse = "+")
         
-      #  as.formula(paste(input$a2,"*(",input$regressand, "^2) + ",
-       #                  input$a1,"*(",input$regressand,") + ",
-        #                 input$a0, "~", expln))
+        #as.formula(paste(input$a2,"*(",input$regressand, "^2) + ",
+         #               input$a1,"*(",input$regressand,") + ",
+          #               input$a0, "~", expln))
         
     #} 
     else if (input$standardize == "regular data") {
