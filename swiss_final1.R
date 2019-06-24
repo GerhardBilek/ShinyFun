@@ -6,7 +6,7 @@ library(ggplot2)
 #remove "Examination" from Dataset
 #snames <- colnames(s)
 
-#swiss <- swiss[,-3]
+swiss_1 <- swiss[,-3] #examination wurde für scatterplot entfernt
 
 awesomeData <- swiss
 
@@ -187,7 +187,7 @@ server <- function(input, output){
   
   output$scatter <- renderPlot({
     dataset <- datasetInput()
-    pairs(swiss, lower.panel = panel.smooth, upper.panel = panel.cor,
+    pairs(swiss_1, lower.panel = panel.smooth, upper.panel = panel.cor,
           gap=0, row1attop=FALSE, main = "Scatterplot")})
     
   #Lineares Modell --------------------------------------------------------------------------------
