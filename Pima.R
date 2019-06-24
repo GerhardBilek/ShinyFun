@@ -5,6 +5,8 @@ library("MASS")
 library(ggplot2) 
 
 pima <- rbind(MASS::Pima.te, MASS::Pima.tr)
+pima1 <- pima [,-8] #type  wurde für correlation/scatternplot entfernt
+
 
 ##predefinition for Correlation "Scatterplot"----------------------------------------------
 panel.cor <- function(x,
@@ -39,7 +41,7 @@ ui <- fluidPage(
     
     #2nd tab Panel------------------------------------------------------------------------------------------
     tabPanel(tags$h3(p(em('Exploration'))),
-             tags$h3("Data Exploration: Distribution of Swiss datasets "), hr(), br(),
+             tags$h3("Data Exploration: Distribution of PIMA datasets "), hr(), br(),
              
              sidebarLayout
              (
@@ -55,7 +57,7 @@ ui <- fluidPage(
                    "bmi",
                    "ped",
                    "age", 
-                   "type"
+                   "type [no values]"
                  )
                )),
                
@@ -98,7 +100,7 @@ ui <- fluidPage(
                            tabPanel("Residuenplots", plotOutput("model_plot")
                                     
                            )
-                         )
+                        )
                )
              )
     )
@@ -148,7 +150,7 @@ server <- function(input, output) {
   
   output$scatter <- renderPlot({
     dataset <- datasetInput()
-    pairs(pima, lower.panel = panel.smooth, upper.panel = panel.cor,
+    pairs(pima1, lower.panel = panel.smooth, upper.panel = panel.cor,
           gap=0, row1attop=FALSE, main = "Scatterplot")})
   
 # Lineares Modell ----------------------------------------------------------  
@@ -175,8 +177,9 @@ server <- function(input, output) {
     myformula()
   })
   
+  
   output$stepmodel <- renderPrint({
-    fit = glm(myformula(), family = binomial(link=("logit")), data=pima)
+    fit = lm(myformula(), family = binomial(link=("logit")), data=pima)
     #fit = lm(myformula(), data=swiss[c(input$checkGroup),]) # ??ndert nix
     step(fit)
   })
@@ -186,8 +189,8 @@ server <- function(input, output) {
   })
   
   output$model_plot <- renderPlot ({
-    fit = glm(myformula(), family = binomial(link=("logit")), data=pima[c(input$checkGroup),])  # Remove Outlier via Checkbox
-    #fit = lm(myformula(), data=swiss)
+    fit = lm(myformula(), family = binomial(link=("logit")), data=pima[c(input$checkGroup),])  # Remove Outlier via Checkbox
+    #fit = lm(myformula(), data=pima)
     par(mfrow=c(2,2))
     plot(fit)
   })
