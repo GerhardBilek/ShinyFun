@@ -217,10 +217,15 @@ server <- function(input, output){
       #Infant.Mortality <- Infant.Mortality^2
       #Catholic <- Catholic^2
       
-      expln <- paste( "(", input$checkbox, ")^2", collapse = "+")
-      as.formula(paste(input$regressand, "~", expln))
+     
+        expln <- paste(input$checkbox, collapse = "+")
+        as.formula (paste("(", input$regressand,")^2","~", expln))
+      }
       
-    }   
+      #expln <- paste( "(", input$checkbox, ")^2", collapse = "+")
+      #as.formula(paste(input$regressand, "~", expln))
+      
+    #}  
       #else if (input$transformation == "Polynom") {
        # expln <- paste(input$checkbox, collapse = "+")
         
