@@ -129,7 +129,7 @@ server <- function(input, output) {
   
   output$hist <- renderPlot({
     dataset <- datasetInput()
-    ggplot(pima, aes(x=dataset)) + geom_histogram(binwidth = 1, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   + labs(x="")
+    ggplot(pima, aes(x=dataset)) + geom_histogram(binwidth = 5, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   + labs(x="")
     #hist(dataset)
   })
   
@@ -137,7 +137,7 @@ server <- function(input, output) {
     dataset <- datasetInput()
     
     #boxplot(dataset)
-    ggplot(swiss, aes(y = dataset)) + geom_boxplot(outlier.colour = "red")+ coord_flip() +guides(color=guide_legend(),size=guide_legend())  + labs(y="")
+    ggplot(pima, aes(y = dataset)) + geom_boxplot(outlier.colour = "red")+ coord_flip() +guides(color=guide_legend(),size=guide_legend())  + labs(y="")
   })
   
   #-----------------QQPLot---------------------------------------------------------------
@@ -159,7 +159,7 @@ server <- function(input, output) {
     #temp <- log(temp)
     #as.formula(paste(temp, "~", expln)) Error in log: non-numeric argument to mathematical function
     
-    # einen haufen buttons für diverse transf. iwo muss sich formel ändern
+    # einen haufen buttons f??r diverse transf. iwo muss sich formel ??ndern
     # if? wenn input$transformation == "LOGX" dann as.formula(paste(input$regressand), "~", log(expln)) etc
     #if (input$transformation == "Log(Y)") {
     #expln <- paste(input$checkbox, collapse = "+") # Error in log: non-numeric argument to mathematical function
@@ -177,7 +177,7 @@ server <- function(input, output) {
   
   output$stepmodel <- renderPrint({
     fit = glm(myformula(), family = binomial(link=("logit")), data=pima)
-    #fit = lm(myformula(), data=swiss[c(input$checkGroup),]) # ändert nix
+    #fit = lm(myformula(), data=swiss[c(input$checkGroup),]) # ??ndert nix
     step(fit)
   })
   
