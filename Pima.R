@@ -90,7 +90,7 @@ ui <- fluidPage(
                                     choiceNames = c("Nr of pregnancies", "plasma glucose conc", "blood pressure", "skin fold thickness", "BMI", "ped", "age", "type"), 
                                     choiceValues = c("npreg", "glu", "bp", "skin", "bmi", "ped", "age", "type"), 
                                     selected = c("npreg", "glu", "bp", "skin", "bmi", "ped", "age", "type")),
-                 radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom?")),
+                 radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom")),
                  checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(pima)),  selected = c(rownames(pima)))
                ),
                mainPanel(tags$h4("Possible linear Models:"), hr(),
@@ -179,12 +179,35 @@ server <- function(input, output) {
       expln <- paste("poly(",input$checkbox,",2)", collapse = "+")
       as.formula(paste(input$regressand, "~" , expln))
       
-    }   
+    } else if (input$standardize == "regular data") {
+      expln <- paste(input$checkbox, collapse = "+")
+      as.formula(paste(input$regressand, "~", expln))
+      
+    } else if (input$standardize == "standardized data"){
+      npreg <- scale(pima$npreg, center = TRUE, scale = TRUE)
+      glu <- scale(pima$glu, center = TRUE, scale = TRUE)
+      bp <- scale(pima$bp, center = TRUE, scale = TRUE)
+      skin <- scale(pima$skin, center = TRUE, scale = TRUE)
+      bmi <- scale(pima$bmi, center = TRUE, scale = TRUE)
+      ped <- scale(pima$ped, center = TRUE, scale = TRUE)
+      age <- scale(pima$age, center = TRUE, scale = TRUE)
+      #type <- scale(pima$type, center = TRUE, scale = TRUE)
+      pima_scale <- cbind(npreg, glu, bp, skin, bmi, ped, age)
+      colnames(pima_scale) <- c("npreg", "glu", "bp", "skin", "bmi", "ped", "age")
+      
+      pima_scale <- as.data.frame(pima_scale)
+
+      expln <- paste(input$checkbox, collapse = "+")
+      as.formula(paste(input$regressand, "~", expln))
+    }  
     
   })
   
   mod <- eventReactive(input$analysis, {
-    glm(myformula(), family = binomial(link=("logit")), data = pima[c(input$checkGroup),])
+    if (input$standardize == "standardized data") { 
+      glm(myformula(), family = binomial(link=("logit")), data = pima_scale)
+    } else {
+      glm(myformula(), family = binomial(link=("logit")), data = pima[c(input$checkGroup),])}
   })
   
   output$modelFormula <- renderPrint({
