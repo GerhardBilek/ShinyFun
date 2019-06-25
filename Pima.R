@@ -159,8 +159,23 @@ server <- function(input, output) {
   
 # Lineares Modell ----------------------------------------------------------  
   myformula <- reactive({
-    expln <- paste(input$checkbox, collapse = "+")
-    as.formula(paste(input$regressand, "~", expln))
+    if (input$transformation == "No Transformation") {
+      expln <- paste(input$checkbox, collapse = "+")
+      as.formula(paste(input$regressand, "~", expln))
+      
+    } else if (input$transformation == "Log(X)") {
+      expln <- paste("log(", input$checkbox, "+1)", collapse = "+") # +1 löst das Problem, das log(0) -inf ist. (anerkannte lösung von data scientists laut internet)
+      as.formula(paste(input$regressand, "~", expln))
+      
+    } else if (input$transformation == "Log(Y)"){
+      expln <- paste(input$checkbox, collapse = "+")
+      as.formula(paste("log(",input$regressand, "+1)", "~", expln)) 
+      
+    } else if (input$transformation == "Log/Log") {
+      expln <- paste("log(", input$checkbox, "+1)", collapse = "+")
+      as.formula(paste("log(",input$regressand, "+1)", "~", expln))
+      
+    }
     
   })
   
