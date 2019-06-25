@@ -175,7 +175,11 @@ server <- function(input, output) {
       expln <- paste("log(", input$checkbox, "+1)", collapse = "+")
       as.formula(paste("log(",input$regressand, "+1)", "~", expln))
       
-    }
+    } else if (input$transformation == "Polynom"){
+      expln <- paste("poly(",input$checkbox,",2)", collapse = "+")
+      as.formula(paste(input$regressand, "~" , expln))
+      
+    }   
     
   })
   
