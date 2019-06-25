@@ -161,16 +161,7 @@ server <- function(input, output) {
   myformula <- reactive({
     expln <- paste(input$checkbox, collapse = "+")
     as.formula(paste(input$regressand, "~", expln))
-    #temp <- input$regressand
-    #temp <- log(temp)
-    #as.formula(paste(temp, "~", expln)) Error in log: non-numeric argument to mathematical function
     
-    # einen haufen buttons f??r diverse transf. iwo muss sich formel ??ndern
-    # if? wenn input$transformation == "LOGX" dann as.formula(paste(input$regressand), "~", log(expln)) etc
-    #if (input$transformation == "Log(Y)") {
-    #expln <- paste(input$checkbox, collapse = "+") # Error in log: non-numeric argument to mathematical function
-    #as.formula(paste(log(input$regressand), "~", expln))
-    #}
   })
   
   mod <- eventReactive(input$analysis, {
