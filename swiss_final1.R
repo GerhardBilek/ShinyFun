@@ -223,7 +223,7 @@ server <- function(input, output){
       #expln <- paste("log(", input$checkbox, ")^3", collapse = "+")
       
       #expln <- paste(input$checkbox, collapse = "+")
-      expln <- paste("(QA2 <-(",input$checkbox,")^2)", collapse = "+")
+      expln <- paste("poly(",input$checkbox,",2)", collapse = "+")
       as.formula(paste(input$regressand, "~" , expln))
       
       #So soll es aussehen .... lm(swiss$Fertility ~ (boom1<-(swiss$Agriculture)^2))
