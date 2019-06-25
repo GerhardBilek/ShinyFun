@@ -3,6 +3,10 @@ library(utils)
 library(gridExtra)
 library("MASS")
 library(ggplot2) 
+library(popbio)
+library(broom)
+library(GGally)
+library(corrplot)
 
 pima <- rbind(MASS::Pima.te, MASS::Pima.tr)
 pima1 <- pima [,-8] #type  wurde für correlation/scatternplot entfernt
@@ -179,8 +183,7 @@ server <- function(input, output) {
   
   
   output$stepmodel <- renderPrint({
-    fit = lm(myformula(), family = binomial(link=("logit")), data=pima)
-    #fit = lm(myformula(), data=swiss[c(input$checkGroup),]) # ??ndert nix
+    fit = glm(myformula(), family = gaussian(link = "identity"), data= pima[c(input$checkGroup),]) #family = gaussion funktioniert
     step(fit)
   })
   
@@ -189,13 +192,9 @@ server <- function(input, output) {
   })
   
   output$model_plot <- renderPlot ({
-    fit = lm(myformula(), family = binomial(link=("logit")), data=pima[c(input$checkGroup),])  # Remove Outlier via Checkbox
-    #fit = lm(myformula(), data=pima)
+    fit = glm(myformula(), family = gaussian(link=("identity")), data=pima[c(input$checkGroup),])  # Remove Outlier via Checkbox#family = gaussian funktioniert, binomial nicht
     par(mfrow=c(2,2))
     plot(fit)
   })
-  
-  
 }
-
 shinyApp(ui = ui, server = server)
