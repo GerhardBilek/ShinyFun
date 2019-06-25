@@ -89,9 +89,9 @@ ui <- fluidPage(
                  checkboxGroupInput("checkbox", "Check independent variables", 
                                     choiceNames = c("Nr of pregnancies", "plasma glucose conc", "blood pressure", "skin fold thickness", "BMI", "ped", "age", "type"), 
                                     choiceValues = c("npreg", "glu", "bp", "skin", "bmi", "ped", "age", "type"), 
-                                    selected = c("Nr of pregnancies", "plasma glucose conc", "blood pressure", "skin fold thickness", "BMI", "ped", "age", "type")),
-                 checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(pima)),  selected = c(rownames(pima))),
-                 radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom?"))
+                                    selected = c("npreg", "glu", "bp", "skin", "bmi", "ped", "age", "type")),
+                 radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom?")),
+                 checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(pima)),  selected = c(rownames(pima)))
                ),
                mainPanel(tags$h4("Possible linear Models:"), hr(),
                          tabsetPanel(
@@ -183,7 +183,7 @@ server <- function(input, output) {
   
   
   output$stepmodel <- renderPrint({
-    fit = glm(myformula(), family = gaussian(link = "identity"), data= pima[c(input$checkGroup),]) #family = gaussion funktioniert
+    fit = glm(myformula(), family = binomial(link=("logit")), data= pima[c(input$checkGroup),]) #family = gaussion funktioniert
     step(fit)
   })
   
@@ -192,7 +192,7 @@ server <- function(input, output) {
   })
   
   output$model_plot <- renderPlot ({
-    fit = glm(myformula(), family = gaussian(link=("identity")), data=pima[c(input$checkGroup),])  # Remove Outlier via Checkbox#family = gaussian funktioniert, binomial nicht
+    fit = glm(myformula(), family = binomial(link=("logit")), data=pima[c(input$checkGroup),])  # Remove Outlier via Checkbox#family = gaussian funktioniert, binomial nicht
     par(mfrow=c(2,2))
     plot(fit)
   })
