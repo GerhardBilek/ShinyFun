@@ -91,14 +91,15 @@ ui <- fluidPage(
                                     choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
                                     selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality")),
                  radioButtons("standardize", "Which data to use ...", choices = c("regular data", "standardized data")),
+                 # actionButton("analysis","I have chosen my independents and want to ANALYSE"),
                  radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Polynom")),
                  checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(swiss)),  selected = c(rownames(swiss)))
                  
                ),
-               mainPanel(tags$h4("Possible linear Models:"), hr(),
+               mainPanel(tags$h4("Possible linear Models:"), actionButton("analysis","I have chosen all parameters wisely and want to ANALYSE"), hr(),
                          tabsetPanel(
-                           tabPanel("Step (AIC)", verbatimTextOutput("stepmodel"),
-                                    actionButton("analysis","I have chosen my independents and want to ANALYSE")
+                           tabPanel("Step (AIC)", verbatimTextOutput("stepmodel") #,
+                                    
                            ),
                            tabPanel("Formel und Modell", verbatimTextOutput("modelFormula"),
                                     verbatimTextOutput("modelSummary")
