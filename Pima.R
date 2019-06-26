@@ -9,7 +9,7 @@ library(GGally)
 library(corrplot)
 
 pima <- rbind(MASS::Pima.te, MASS::Pima.tr)
-pima1 <- pima [,-8] #type  wurde für correlation/scatternplot entfernt
+pima1 <- pima [,-8] #type  wurde f??r correlation/scatternplot entfernt
 
 
 ##predefinition for Correlation "Scatterplot"----------------------------------------------
@@ -90,8 +90,9 @@ ui <- fluidPage(
                                     choiceNames = c("Nr of pregnancies", "plasma glucose conc", "blood pressure", "skin fold thickness", "BMI", "ped", "age", "type"), 
                                     choiceValues = c("npreg", "glu", "bp", "skin", "bmi", "ped", "age", "type"), 
                                     selected = c("Nr of pregnancies", "plasma glucose conc", "blood pressure", "skin fold thickness", "BMI", "ped", "age", "type")),
-                 checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(pima)),  selected = c(rownames(pima))),
-                 radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom?"))
+                 radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom?")),
+                 checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(pima)),  selected = c(rownames(pima)))
+                 
                ),
                mainPanel(tags$h4("Possible linear Models:"), hr(),
                          tabsetPanel(
