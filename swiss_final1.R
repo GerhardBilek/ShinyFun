@@ -73,7 +73,7 @@ ui <- fluidPage(
                                     fluidRow(column(width = 3, h5("Mean")), column(width = 3, verbatimTextOutput("the_mean")),
                                              column(width = 3, h5("Standard deviation")), column(width = 3, verbatimTextOutput("the_sd")))
                                     ),
-                           tabPanel("Histogram & Boxplot", plotOutput("hist"), h4(textOutput("caption")),plotOutput("boxplot")),
+                           tabPanel("Histogram & Boxplot",sliderInput("bins", "Number of bins:", min = 1, max = 50, value = 5), plotOutput("hist"), h4(textOutput("caption")),plotOutput("boxplot")),
                            tabPanel("QQ-Plot", plotOutput("qqplot"))#,
                            #tabPanel("Scatterplot", plotOutput("scatter"))
                          )
@@ -94,13 +94,16 @@ ui <- fluidPage(
                  checkboxGroupInput("checkbox", "Check independent variables", 
                                     choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
                                     choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
-                                    selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality")),
+                                    selected = c()),
+                                    #selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality")),
                  radioButtons("standardize", "Which data to use ...", choices = c("regular data", "standardized data")),
                  # actionButton("analysis","I have chosen my independents and want to ANALYSE"),
                  radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Polynom")),
                  checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(swiss)),  selected = c(rownames(swiss)))
                  
                ),
+          
+               
                mainPanel(tags$h4("Possible linear Models:"), actionButton("analysis","I have chosen all parameters wisely and want to ANALYSE"), hr(),
                          tabsetPanel(
                            tabPanel("Step (AIC)", verbatimTextOutput("stepmodel") #,
@@ -172,7 +175,8 @@ server <- function(input, output){
   
   output$hist <- renderPlot({
     dataset <- datasetInput()
-    ggplot(swiss, aes(x=dataset)) + geom_histogram(binwidth = 5, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   + labs(x="")
+    #bins <- seq(min(dataset), max(dataset), length.out = input$bins + 1)
+    ggplot(swiss, aes(x=dataset)) + geom_histogram(binwidth = input$bins, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   + labs(x="")
     #hist(dataset)
   })
   
