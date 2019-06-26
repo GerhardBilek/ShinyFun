@@ -6,7 +6,7 @@ library(ggplot2)
 #remove "Examination" from Dataset
 #snames <- colnames(s)
 
-swiss_1 <- swiss[,-3] #examination wurde für scatterplot entfernt
+swiss_1 <- swiss[,-3] #examination wurde f??r scatterplot entfernt
 
 awesomeData <- swiss
 
@@ -211,29 +211,10 @@ server <- function(input, output){
       as.formula(paste("log(",input$regressand, ")", "~", expln))
 
     } else if (input$transformation == "Polynom") {
-      #Fertility <- Fertility^2
-      #Agriculture <- Agriculture^2
-      #Education <- Education^2
-      #Infant.Mortality <- Infant.Mortality^2
-      #Catholic <- Catholic^2
-      
-     
-        expln <- paste(input$checkbox, collapse = "+")
-        as.formula (paste("(", input$regressand,")^2","~", expln))
+        expln <- paste("poly(",input$checkbox,",2)", collapse = "+")
+        as.formula (paste(input$regressand,"~", expln))
       }
       
-      #expln <- paste( "(", input$checkbox, ")^2", collapse = "+")
-      #as.formula(paste(input$regressand, "~", expln))
-      
-    #}  
-      #else if (input$transformation == "Polynom") {
-       # expln <- paste(input$checkbox, collapse = "+")
-        
-        #as.formula(paste(input$a2,"*(",input$regressand, "^2) + ",
-         #               input$a1,"*(",input$regressand,") + ",
-          #               input$a0, "~", expln))
-        
-    #} 
     else if (input$standardize == "regular data") {
       #rm(swiss)
       #swiss_norm <- swiss
@@ -258,8 +239,6 @@ server <- function(input, output){
       expln <- paste(input$checkbox, collapse = "+")
       as.formula(paste(input$regressand, "~", expln))
     }
-
-    
   })
   
   mod <- eventReactive(input$analysis, {
