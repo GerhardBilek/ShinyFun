@@ -67,7 +67,10 @@ ui <- fluidPage(
                
                mainPanel(tags$h4("Data and Visualizations:"),
                          tabsetPanel(
-                           tabPanel("Summary", verbatimTextOutput("summary")),
+                           tabPanel("Summary", verbatimTextOutput("summary"), 
+                                    "Mean: ", verbatimTextOutput("the_mean"),
+                                    "Standard Deviation: ", verbatimTextOutput("the_sd")
+                                    ),
                            tabPanel("Histogram & Boxplot", plotOutput("hist"), h4(textOutput("caption")),plotOutput("boxplot")),
                            tabPanel("QQ-Plot", plotOutput("qqplot"))#,
                            #tabPanel("Scatterplot", plotOutput("scatter"))
@@ -149,6 +152,14 @@ server <- function(input, output){
   
   output$value <- renderText({output$caption})
   
+  # Lagesch??tzer:
+  output$the_mean <- renderPrint({round(mean(datasetInput()),digits=2)})
+  
+  # Streuungsma??e:
+  output$the_sd <- renderPrint({round(sd(datasetInput()),digits=2)})
+  
+  
+  
   output$rawdata_swiss <- renderTable({
     dataset <- swiss
     dataset})  # head(dataset)
@@ -165,18 +176,11 @@ server <- function(input, output){
   
   output$boxplot <- renderPlot({
     dataset <- datasetInput()
-    
     #boxplot(dataset)
     ggplot(swiss, aes(y = dataset)) + geom_boxplot(outlier.colour = "red")+ coord_flip() +guides(color=guide_legend(),size=guide_legend())  + labs(y="")
   })
   
-  #rds <- reactiveValues(data=swiss)
-  # dinput$Fertility = as.factor(dinput$Fertility)
-  #observe function to make the plot reactive 
-  #observe({
-  # df = brushedPoints(rds$data, brush = input$plot_brush_, allRows = TRUE)
-  #  rds$data = df[df$selected_== FALSE,]
-  #})
+
   
   
   
