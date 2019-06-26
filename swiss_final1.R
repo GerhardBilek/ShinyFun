@@ -5,7 +5,8 @@ library(ggplot2)
 
 #remove "Examination" from Dataset
 #snames <- colnames(s)
-#swiss <- swiss[,-3]
+
+swiss_1 <- swiss[,-3] #examination wurde für scatterplot entfernt
 
 awesomeData <- swiss
 
@@ -103,10 +104,10 @@ ui <- fluidPage(
                                     verbatimTextOutput("modelSummary")
                            ),
                            tabPanel("Residuenplots",
-                                    conditionalPanel(condition = "input.transformation == 'Polynom'",
-                                    numericInput("a2", "a2", value = 0),
-                                    numericInput("a1", "a1", value = 1),
-                                    numericInput("a0", "a0", value = 0)),
+                                    #conditionalPanel(condition = "input.transformation == 'Polynom'",
+                                    #numericInput("a2", "a2", value = 0),
+                                    #numericInput("a1", "a1", value = 1),
+                                    #numericInput("a0", "a0", value = 0)),
                                     plotOutput("model_plot")
                                     
                            )
@@ -157,7 +158,7 @@ server <- function(input, output){
   
   output$hist <- renderPlot({
     dataset <- datasetInput()
-    ggplot(swiss, aes(x=dataset)) + geom_histogram(binwidth = 1, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   + labs(x="")
+    ggplot(swiss, aes(x=dataset)) + geom_histogram(binwidth = 5, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   + labs(x="")
     #hist(dataset)
   })
   
@@ -186,7 +187,7 @@ server <- function(input, output){
   
   output$scatter <- renderPlot({
     dataset <- datasetInput()
-    pairs(swiss, lower.panel = panel.smooth, upper.panel = panel.cor,
+    pairs(swiss_1, lower.panel = panel.smooth, upper.panel = panel.cor,
           gap=0, row1attop=FALSE, main = "Scatterplot")})
     
   #Lineares Modell --------------------------------------------------------------------------------
@@ -209,15 +210,31 @@ server <- function(input, output){
       expln <- paste("log(", input$checkbox, ")", collapse = "+")
       as.formula(paste("log(",input$regressand, ")", "~", expln))
 
-    }    
-      else if (input$transformation == "Polynom") {
+    } else if (input$transformation == "Polynom") {
+      #Fertility <- Fertility^2
+      #Agriculture <- Agriculture^2
+      #Education <- Education^2
+      #Infant.Mortality <- Infant.Mortality^2
+      #Catholic <- Catholic^2
+      
+     
         expln <- paste(input$checkbox, collapse = "+")
+        as.formula (paste("(", input$regressand,")^2","~", expln))
+      }
+      
+      #expln <- paste( "(", input$checkbox, ")^2", collapse = "+")
+      #as.formula(paste(input$regressand, "~", expln))
+      
+    #}  
+      #else if (input$transformation == "Polynom") {
+       # expln <- paste(input$checkbox, collapse = "+")
         
-        as.formula(paste(input$a2,"*(",input$regressand, "^2) + ",
-                         input$a1,"*(",input$regressand,") + ",
-                         input$a0, "~", expln))
+        #as.formula(paste(input$a2,"*(",input$regressand, "^2) + ",
+         #               input$a1,"*(",input$regressand,") + ",
+          #               input$a0, "~", expln))
         
-    } else if (input$standardize == "regular data") {
+    #} 
+    else if (input$standardize == "regular data") {
       #rm(swiss)
       #swiss_norm <- swiss
       
