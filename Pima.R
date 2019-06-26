@@ -89,10 +89,9 @@ ui <- fluidPage(
                  checkboxGroupInput("checkbox", "Check independent variables", 
                                     choiceNames = c("Nr of pregnancies", "plasma glucose conc", "blood pressure", "skin fold thickness", "BMI", "ped", "age", "type"), 
                                     choiceValues = c("npreg", "glu", "bp", "skin", "bmi", "ped", "age", "type"), 
-                                    selected = c("Nr of pregnancies", "plasma glucose conc", "blood pressure", "skin fold thickness", "BMI", "ped", "age", "type")),
-                 radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom?")),
+                                    selected = c("npreg", "glu", "bp", "skin", "bmi", "ped", "age", "type")),
+                 radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom")),
                  checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(pima)),  selected = c(rownames(pima)))
-                 
                ),
                mainPanel(tags$h4("Possible linear Models:"), hr(),
                          tabsetPanel(
@@ -160,22 +159,55 @@ server <- function(input, output) {
   
 # Lineares Modell ----------------------------------------------------------  
   myformula <- reactive({
-    expln <- paste(input$checkbox, collapse = "+")
-    as.formula(paste(input$regressand, "~", expln))
-    #temp <- input$regressand
-    #temp <- log(temp)
-    #as.formula(paste(temp, "~", expln)) Error in log: non-numeric argument to mathematical function
+    if (input$transformation == "No Transformation") {
+      expln <- paste(input$checkbox, collapse = "+")
+      as.formula(paste(input$regressand, "~", expln))
+      
+    } else if (input$transformation == "Log(X)") {
+      expln <- paste("log(", input$checkbox, "+1)", collapse = "+") # +1 löst das Problem, das log(0) -inf ist. (anerkannte lösung von data scientists laut internet)
+      as.formula(paste(input$regressand, "~", expln))
+      
+    } else if (input$transformation == "Log(Y)"){
+      expln <- paste(input$checkbox, collapse = "+")
+      as.formula(paste("log(",input$regressand, "+1)", "~", expln)) 
+      
+    } else if (input$transformation == "Log/Log") {
+      expln <- paste("log(", input$checkbox, "+1)", collapse = "+")
+      as.formula(paste("log(",input$regressand, "+1)", "~", expln))
+      
+    } else if (input$transformation == "Polynom"){
+      expln <- paste("poly(",input$checkbox,",2)", collapse = "+")
+      as.formula(paste(input$regressand, "~" , expln))
+      
+    } else if (input$standardize == "regular data") {
+      expln <- paste(input$checkbox, collapse = "+")
+      as.formula(paste(input$regressand, "~", expln))
+      
+    } else if (input$standardize == "standardized data"){
+      npreg <- scale(pima$npreg, center = TRUE, scale = TRUE)
+      glu <- scale(pima$glu, center = TRUE, scale = TRUE)
+      bp <- scale(pima$bp, center = TRUE, scale = TRUE)
+      skin <- scale(pima$skin, center = TRUE, scale = TRUE)
+      bmi <- scale(pima$bmi, center = TRUE, scale = TRUE)
+      ped <- scale(pima$ped, center = TRUE, scale = TRUE)
+      age <- scale(pima$age, center = TRUE, scale = TRUE)
+      #type <- scale(pima$type, center = TRUE, scale = TRUE)
+      pima_scale <- cbind(npreg, glu, bp, skin, bmi, ped, age)
+      colnames(pima_scale) <- c("npreg", "glu", "bp", "skin", "bmi", "ped", "age")
+      
+      pima_scale <- as.data.frame(pima_scale)
+
+      expln <- paste(input$checkbox, collapse = "+")
+      as.formula(paste(input$regressand, "~", expln))
+    }  
     
-    # einen haufen buttons f??r diverse transf. iwo muss sich formel ??ndern
-    # if? wenn input$transformation == "LOGX" dann as.formula(paste(input$regressand), "~", log(expln)) etc
-    #if (input$transformation == "Log(Y)") {
-    #expln <- paste(input$checkbox, collapse = "+") # Error in log: non-numeric argument to mathematical function
-    #as.formula(paste(log(input$regressand), "~", expln))
-    #}
-  })
+    })
   
   mod <- eventReactive(input$analysis, {
-    glm(myformula(), family = binomial(link=("logit")), data = pima[c(input$checkGroup),])
+   # if (input$standardize == "standardized data") { 
+    #  glm(myformula(), family = binomial(link=("logit")), data = pima_scale)
+   # } else {
+      glm(myformula(), family = binomial(link=("logit")), data = pima[c(input$checkGroup),])#}
   })
   
   output$modelFormula <- renderPrint({
@@ -184,7 +216,7 @@ server <- function(input, output) {
   
   
   output$stepmodel <- renderPrint({
-    fit = glm(myformula(), family = gaussian(link = "identity"), data= pima[c(input$checkGroup),]) #family = gaussion funktioniert
+    fit = glm(myformula(), family = binomial(link=("logit")), data= pima[c(input$checkGroup),]) #family = gaussion funktioniert
     step(fit)
   })
   
@@ -193,9 +225,10 @@ server <- function(input, output) {
   })
   
   output$model_plot <- renderPlot ({
-    fit = glm(myformula(), family = gaussian(link=("identity")), data=pima[c(input$checkGroup),])  # Remove Outlier via Checkbox#family = gaussian funktioniert, binomial nicht
+    fit = glm(myformula(), family = binomial(link=("logit")), data=pima[c(input$checkGroup),])  # Remove Outlier via Checkbox#family = gaussian funktioniert, binomial nicht
     par(mfrow=c(2,2))
     plot(fit)
   })
 }
+
 shinyApp(ui = ui, server = server)
