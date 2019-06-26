@@ -201,13 +201,13 @@ server <- function(input, output) {
       as.formula(paste(input$regressand, "~", expln))
     }  
     
-  })
+    })
   
   mod <- eventReactive(input$analysis, {
-    if (input$standardize == "standardized data") { 
-      glm(myformula(), family = binomial(link=("logit")), data = pima_scale)
-    } else {
-      glm(myformula(), family = binomial(link=("logit")), data = pima[c(input$checkGroup),])}
+   # if (input$standardize == "standardized data") { 
+    #  glm(myformula(), family = binomial(link=("logit")), data = pima_scale)
+   # } else {
+      glm(myformula(), family = binomial(link=("logit")), data = pima[c(input$checkGroup),])#}
   })
   
   output$modelFormula <- renderPrint({
@@ -230,4 +230,5 @@ server <- function(input, output) {
     plot(fit)
   })
 }
+
 shinyApp(ui = ui, server = server)
