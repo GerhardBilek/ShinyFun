@@ -68,8 +68,10 @@ ui <- fluidPage(
                mainPanel(tags$h4("Data and Visualizations:"),
                          tabsetPanel(
                            tabPanel("Summary", verbatimTextOutput("summary"), 
-                                    "Mean: ", verbatimTextOutput("the_mean"),
-                                    "Standard Deviation: ", verbatimTextOutput("the_sd")
+                                    #"Mean: ", verbatimTextOutput("the_mean"),
+                                    #"Standard Deviation: ", verbatimTextOutput("the_sd"),
+                                    fluidRow(column(width = 3, h5("Mean")), column(width = 3, verbatimTextOutput("the_mean")),
+                                             column(width = 3, h5("Standard deviation")), column(width = 3, verbatimTextOutput("the_sd")))
                                     ),
                            tabPanel("Histogram & Boxplot", plotOutput("hist"), h4(textOutput("caption")),plotOutput("boxplot")),
                            tabPanel("QQ-Plot", plotOutput("qqplot"))#,
