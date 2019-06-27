@@ -67,8 +67,13 @@ ui <- fluidPage(
                
                mainPanel(tags$h4("Data and Visualizations:"),
                          tabsetPanel(
-                           tabPanel("Summary", verbatimTextOutput("summary")),
-                           tabPanel("Histogram & Boxplot", plotOutput("hist"), h4(textOutput("caption")),plotOutput("boxplot")),
+                           tabPanel("Summary", verbatimTextOutput("summary"), 
+                                    #"Mean: ", verbatimTextOutput("the_mean"),
+                                    #"Standard Deviation: ", verbatimTextOutput("the_sd"),
+                                    fluidRow(column(width = 3, h5("Mean")), column(width = 3, verbatimTextOutput("the_mean")),
+                                             column(width = 3, h5("Standard deviation")), column(width = 3, verbatimTextOutput("the_sd")))
+                                    ),
+                           tabPanel("Histogram & Boxplot",sliderInput("bins", "Number of bins:", min = 1, max = 50, value = 5), plotOutput("hist"), h4(textOutput("caption")),plotOutput("boxplot")),
                            tabPanel("QQ-Plot", plotOutput("qqplot"))#,
                            #tabPanel("Scatterplot", plotOutput("scatter"))
                          )
@@ -89,16 +94,20 @@ ui <- fluidPage(
                  checkboxGroupInput("checkbox", "Check independent variables", 
                                     choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
                                     choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
-                                    selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality")),
+                                    selected = c()),
+                                    #selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality")),
                  radioButtons("standardize", "Which data to use ...", choices = c("regular data", "standardized data")),
+                 # actionButton("analysis","I have chosen my independents and want to ANALYSE"),
                  radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Polynom")),
                  checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(swiss)),  selected = c(rownames(swiss)))
                  
                ),
-               mainPanel(tags$h4("Possible linear Models:"), hr(),
+          
+               
+               mainPanel(tags$h4("Possible linear Models:"), actionButton("analysis","I have chosen all parameters wisely and want to ANALYSE"), hr(),
                          tabsetPanel(
-                           tabPanel("Step (AIC)", verbatimTextOutput("stepmodel"),
-                                    actionButton("analysis","I have chosen my independents and want to ANALYSE")
+                           tabPanel("Step (AIC)", verbatimTextOutput("stepmodel") #,
+                                    
                            ),
                            tabPanel("Formel und Modell", verbatimTextOutput("modelFormula"),
                                     verbatimTextOutput("modelSummary")
@@ -148,6 +157,14 @@ server <- function(input, output){
   
   output$value <- renderText({output$caption})
   
+  # Lagesch??tzer:
+  output$the_mean <- renderPrint({round(mean(datasetInput()),digits=2)})
+  
+  # Streuungsma??e:
+  output$the_sd <- renderPrint({round(sd(datasetInput()),digits=2)})
+  
+  
+  
   output$rawdata_swiss <- renderTable({
     dataset <- swiss
     dataset})  # head(dataset)
@@ -158,24 +175,18 @@ server <- function(input, output){
   
   output$hist <- renderPlot({
     dataset <- datasetInput()
-    ggplot(swiss, aes(x=dataset)) + geom_histogram(binwidth = 5, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   + labs(x="")
+    #bins <- seq(min(dataset), max(dataset), length.out = input$bins + 1)
+    ggplot(swiss, aes(x=dataset)) + geom_histogram(binwidth = input$bins, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   + labs(x="")
     #hist(dataset)
   })
   
   output$boxplot <- renderPlot({
     dataset <- datasetInput()
-    
     #boxplot(dataset)
     ggplot(swiss, aes(y = dataset)) + geom_boxplot(outlier.colour = "red")+ coord_flip() +guides(color=guide_legend(),size=guide_legend())  + labs(y="")
   })
   
-  #rds <- reactiveValues(data=swiss)
-  # dinput$Fertility = as.factor(dinput$Fertility)
-  #observe function to make the plot reactive 
-  #observe({
-  # df = brushedPoints(rds$data, brush = input$plot_brush_, allRows = TRUE)
-  #  rds$data = df[df$selected_== FALSE,]
-  #})
+
   
   
   
