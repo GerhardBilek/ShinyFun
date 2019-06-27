@@ -94,10 +94,8 @@ ui <- fluidPage(
                  checkboxGroupInput("checkbox", "Check independent variables", 
                                     choiceNames = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
                                     choiceValues = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality"), 
-                                    selected = c()),
-                                    #selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality")),
+                                    selected = c("Fertility", "Agriculture", "Education", "Catholic", "Infant.Mortality")),
                  radioButtons("standardize", "Which data to use ...", choices = c("regular data", "standardized data")),
-                 # actionButton("analysis","I have chosen my independents and want to ANALYSE"),
                  radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Polynom")),
                  checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(swiss)),  selected = c(rownames(swiss)))
                  
