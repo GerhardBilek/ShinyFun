@@ -67,8 +67,11 @@ ui <- fluidPage(
                
                mainPanel(tags$h4("Data and Visualizations:"),
                          tabsetPanel(
-                           tabPanel("Summary", verbatimTextOutput("summary")),
-                           tabPanel("Histogram & Boxplot", plotOutput("hist"), h4(textOutput("caption")),plotOutput("boxplot")),
+                           tabPanel("Summary", verbatimTextOutput("summary"),
+                                    fluidRow(column(width = 3, h5("Mean")), column(width = 3, verbatimTextOutput("the_mean")),
+                                             column(width = 3, h5("Standard deviation")), column(width = 3, verbatimTextOutput("the_sd")))
+                                    ),
+                           tabPanel("Histogram & Boxplot", sliderInput("bins", "Number of bins:", min = 1, max = 50, value = 5), plotOutput("hist"), h4(textOutput("caption")),plotOutput("boxplot")),
                            tabPanel("QQ-Plot", plotOutput("qqplot"))#,
                            #tabPanel("Scatterplot", plotOutput("scatter"))
                          )
@@ -85,18 +88,20 @@ ui <- fluidPage(
     tabPanel(tags$h3(p(em('Linear Model'))), tags$h3("Enter your dependent and independent Variables"),hr(),
              sidebarLayout(
                sidebarPanel(
-                 selectInput("regressand", "Dependent Variable", choices = c("npreg", "glu", "bp", "skin", "bmi", "ped", "age", "type" )),
+                 selectInput("regressand", "Dependent Variable", 
+                                    choices = c("npreg", "glu", "bp", "skin", "bmi", "ped", "age", "type" ), 
+                                    selected = "type"),
                  checkboxGroupInput("checkbox", "Check independent variables", 
                                     choiceNames = c("Nr of pregnancies", "plasma glucose conc", "blood pressure", "skin fold thickness", "BMI", "ped", "age", "type"), 
                                     choiceValues = c("npreg", "glu", "bp", "skin", "bmi", "ped", "age", "type"), 
-                                    selected = c("npreg", "glu", "bp", "skin", "bmi", "ped", "age", "type")),
+                                    selected = c("npreg", "glu", "bp", "skin", "bmi", "ped", "age")),
                  radioButtons("transformation", "Apply this transformation", choices = c("No Transformation", "Log(X)", "Log(Y)", "Log/Log", "Standardisation", "Polynom")),
                  checkboxGroupInput("checkGroup", label = h4("Remove Outlier: "), choices = c(rownames(pima)),  selected = c(rownames(pima)))
                ),
-               mainPanel(tags$h4("Possible linear Models:"), hr(),
+               mainPanel(tags$h4("Possible linear Models:"), actionButton("analysis","I have chosen all parameters wisely and want to ANALYSE"), hr(),
                          tabsetPanel(
-                           tabPanel("Step (AIC)", verbatimTextOutput("stepmodel"),
-                                    actionButton("analysis","I have chosen my independents and want to ANALYSE")
+                           tabPanel("Step (AIC)", verbatimTextOutput("stepmodel")
+                                    
                            ),
                            tabPanel("Formel und Modell", verbatimTextOutput("modelFormula"),
                                     verbatimTextOutput("modelSummary")
@@ -125,6 +130,12 @@ server <- function(input, output) {
     )
   })
   
+  # Lagesch??tzer:
+  output$the_mean <- renderPrint({round(mean(datasetInput()),digits=2)})
+  
+  # Streuungsma??e:
+  output$the_sd <- renderPrint({round(sd(datasetInput()),digits=2)})
+  
   output$rawdata_pima <- renderTable({
     dataset <- pima
     dataset})
@@ -135,7 +146,7 @@ server <- function(input, output) {
   
   output$hist <- renderPlot({
     dataset <- datasetInput()
-    ggplot(pima, aes(x=dataset)) + geom_histogram(binwidth = 5, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   + labs(x="")
+    ggplot(pima, aes(x=dataset)) + geom_histogram(binwidth = input$bins, aes(y= ..density.., fill = ..count..))+geom_density(fill="red", alpha = 0.4)   + labs(x="")
     #hist(dataset)
   })
   
